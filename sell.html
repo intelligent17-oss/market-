@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Seller</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 { color: #333; }
+    p { margin: 20px 0; font-size: 18px; }
+    button {
+      padding: 15px 30px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover { background-color: #0056b3; }
+    #warning { color: red; font-weight: bold; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Intelligent Marketplace Seller Contact</h1>
+  <p>Click the button below to contact the seller of the account</p>
+  <button id="contactBtn">Contact Seller</button>
+  <p id="warning" style="display:none;">
+    Please open this website in Chrome, Firefox, Edge, or another full browser to proceed.
+  </p>
+
+  <script>
+    const adsLink = "https://otieu.com/4/9831065"; // Your ad link
+    const contactBtn = document.getElementById('contactBtn');
+    const warning = document.getElementById('warning');
+
+    // Detect full browsers (block in-app browsers including Telegram)
+    function isFullBrowser() {
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      const inAppBrowserPatterns = [
+        /FBAN/i, /FBAV/i, /Instagram/i, /Twitter/i,
+        /Line/i, /Snapchat/i, /TikTok/i, /Pinterest/i,
+        /Telegram/i
+      ];
+      return !inAppBrowserPatterns.some(pattern => pattern.test(ua));
+    }
+
+    // Hide button and show warning if in-app browser
+    if (!isFullBrowser()) {
+      contactBtn.style.display = 'none';
+      warning.style.display = 'block';
+    }
+
+    // Show ad once after 3 seconds (only if in a real browser)
+    window.addEventListener('load', () => {
+      if (isFullBrowser()) {
+        setTimeout(() => {
+          window.open(adsLink, '_blank');
+        }, 3000);
+      }
+    });
+
+    // Contact button redirects directly to seller link
+    contactBtn.addEventListener('click', () => {
+      const contactLink = new URLSearchParams(window.location.search).get('contact');
+      if (!contactLink) {
+        alert("Please select a valid account");
+        return;
+      }
+      window.location.href = contactLink;
+    });
+  </script>
+</body>
+</html>
