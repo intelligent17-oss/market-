@@ -190,7 +190,7 @@ function startAutoAds() {
   // Then repeat every 20 seconds
   __autoAdTimer = setInterval(() => {
     if (!__isAdPlaying) showMyAdSafe().catch(() => {});
-  }, 20000);
+  }, 10000);
 }
 
 function stopAutoAds() {
