@@ -170,8 +170,8 @@ function showMyAdSafe() {
     .then(() => show_9830644())
     .catch(err => console.warn('Monetag ad error:', err))
     .finally(() => {
-      // Only release ad lock AFTER full 20s interval
-      setTimeout(() => { __isAdPlaying = false; }, 20000); 
+      // Only release ad lock AFTER full 10s interval
+      setTimeout(() => { __isAdPlaying = false; }, 10000); 
     });
 }
 
@@ -187,7 +187,7 @@ function startAutoAds() {
     showMyAdSafe().catch(() => {});
   }, 5000);
 
-  // Then repeat every 20 seconds
+  // Then repeat every 10 seconds
   __autoAdTimer = setInterval(() => {
     if (!__isAdPlaying) showMyAdSafe().catch(() => {});
   }, 10000);
