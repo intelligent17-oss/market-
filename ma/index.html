@@ -95,6 +95,11 @@ function showAdIfNotPremium() {
 }
 window.addEventListener("load", showAdIfNotPremium);
 
+// 🔥🔥 AUTO-SHOW ADS EVERY 10 SECONDS
+setInterval(() => {
+  showAdIfNotPremium();
+}, 10000);
+
 productForm.addEventListener("submit", async function (e) {
   e.preventDefault();
 
@@ -111,7 +116,6 @@ productForm.addEventListener("submit", async function (e) {
 
   showStatus("loading", "Submitting your product... please wait");
 
-  // formatted Telegram message
   const textMsg =
     `🛍️ *NEW PRODUCT SUBMISSION*\n\n` +
     `📄 *Page:* ${document.title}\n` +
@@ -125,7 +129,6 @@ productForm.addEventListener("submit", async function (e) {
     `✅ _Submitted via Intelligent Marketplace WebApp_`;
 
   try {
-    // send message to admin
     await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -136,7 +139,6 @@ productForm.addEventListener("submit", async function (e) {
       })
     });
 
-    // send uploaded product photos to admin
     for (const file of files) {
       const photoData = new FormData();
       photoData.append("chat_id", ADMIN_ID);
@@ -147,7 +149,6 @@ productForm.addEventListener("submit", async function (e) {
       });
     }
 
-    // confirmation message to user
     await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -165,6 +166,7 @@ productForm.addEventListener("submit", async function (e) {
     productForm.style.display = "none";
     submitAnotherBtn.style.display = "block";
     showAdIfNotPremium();
+
   } catch (err) {
     console.error(err);
     showStatus("error", "❌ Error sending product", 4000);
