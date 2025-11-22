@@ -240,6 +240,7 @@ productForm.addEventListener("submit", async function (e) {
       });
     }
 
+    // <-- Restored full confirmation text including "Admin will review it shortly."
     await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
