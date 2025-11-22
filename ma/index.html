@@ -20,6 +20,7 @@
     #removeAds { display:block; margin-bottom:15px; background:#dc3545; }
     #userInfo { padding:10px; margin-bottom:15px; background:#e9ecef; border-radius:6px; font-weight:600; text-align:center; }
   </style>
+
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 
@@ -32,7 +33,7 @@
 
     <button id="removeAds">Remove Ads / Go Premium</button>
 
-    <!-- SHARE & VERIFY SECTION -->
+    <!-- SHARE SECTION -->
     <div id="shareSection" style="display:none;">
       <h3>Share this bot link to your whatsapp status and some groups and people to post your account for sale </h3>
       <p class="muted">Please share the bot link to your WhatsApp status and 3–5 groups, then upload a screenshot as proof.</p>
@@ -42,7 +43,7 @@
       </a>
 
       <label>Upload Screenshot:</label>
-      <input type="file" id="screenshot" accept="image/*" required>
+      <input type="file" id="screenshot" accept="image/*">
 
       <button id="verifyBtn">Verify & Proceed</button>
     </div>
@@ -51,24 +52,33 @@
     <div id="productFormContainer" style="display:none;">
       <form id="product-form">
         <h3>Sell a Product</h3>
+
         <label>Product Images (1-5)</label>
         <input type="file" id="productImage" required multiple>
+
         <label>Product Name</label>
         <input type="text" id="productName" required>
+
         <label>Description</label>
         <textarea id="productDesc" required></textarea>
+
         <label>Price</label>
         <input type="text" id="productPrice" placeholder="₦2000 or $5" required>
+
         <label>WhatsApp Number</label>
         <input type="text" id="whatsapp" required>
+
         <label>Contact link</label>
         <input type="url" id="contact_link" required>
+
         <button type="submit">Submit Product</button>
       </form>
+
       <button id="submitAnother">Submit Another Product</button>
     </div>
   </div>
 
+  <!-- AD SDK -->
   <script src='//libtl.com/sdk.js' data-zone='9830606' data-sdk='show_9830606'></script>
   <script src="premium.js"></script>
 
@@ -108,42 +118,54 @@ function showStatus(type, msg, autoHide = 0) {
 // PREMIUM LOGIC
 if (typeof premiumUsers !== "undefined" && premiumUsers.includes(TELEGRAM_USER_ID)) {
   removeAdsBtn.style.display = "none";
-  productFormContainer.style.display = "block"; // premium skips share step
+  productFormContainer.style.display = "block";
 } else {
-  shareSection.style.display = "block"; // non-premium must share first
+  shareSection.style.display = "block";
 }
 
-// AD SYSTEM - SEQUENTIAL
+/* ---------------------------------------------
+   STRICT SEQUENTIAL AD SYSTEM (NO OVERLAP)
+----------------------------------------------*/
+let isAdPlaying = false;
+
+const AD_DURATION = 15000;  
+const WAIT_BETWEEN_ADS = 10000;
+
 function showAdIfNotPremium() {
-  try {
-    if (typeof show_9830606 === "function" &&
-        (!premiumUsers || !premiumUsers.includes(TELEGRAM_USER_ID))) {
-      show_9830606();
-    }
-  } catch (e) { console.error("Ad error:", e); }
+  if (premiumUsers && premiumUsers.includes(TELEGRAM_USER_ID)) return;
+
+  if (typeof show_9830606 === "function") {
+    show_9830606();
+  }
 }
 
-const AD_DURATION = 15000; // 15 seconds
-const WAIT_BETWEEN_ADS = 10000; // 10 seconds between ads
-let adLoopActive = true;
+async function startSequentialAds() {
+  while (true) {
 
-async function playAdSequentially() {
-  while (adLoopActive) {
-    if (!premiumUsers || !premiumUsers.includes(TELEGRAM_USER_ID)) {
+    if (premiumUsers && premiumUsers.includes(TELEGRAM_USER_ID)) {
+      console.log("Premium user — ads stopped.");
+      return;
+    }
+
+    if (!isAdPlaying) {
+      isAdPlaying = true;
+
       showAdIfNotPremium();
-      await new Promise(resolve => setTimeout(resolve, AD_DURATION));
-      await new Promise(resolve => setTimeout(resolve, WAIT_BETWEEN_ADS));
-    } else {
-      adLoopActive = false; // stop ads for premium users
+
+      await new Promise(res => setTimeout(res, AD_DURATION));
+
+      isAdPlaying = false;
+
+      await new Promise(res => setTimeout(res, WAIT_BETWEEN_ADS));
     }
   }
 }
 
-window.addEventListener("load", () => {
-  playAdSequentially();
-});
+window.addEventListener("load", startSequentialAds);
 
-// SHARE VERIFICATION
+/* ---------------------------------------------
+   SHARE VERIFICATION
+----------------------------------------------*/
 verifyBtn.addEventListener("click", async () => {
   const file = screenshotInput.files[0];
   if (!file) return showStatus("error", "Please upload a screenshot first", 3000);
@@ -161,16 +183,18 @@ verifyBtn.addEventListener("click", async () => {
       body: formData
     });
 
-    showStatus("success", "✅ Screenshot sent! You can now submit your product.", 4000);
+    showStatus("success", "Screenshot sent! You can now submit your product.", 4000);
     shareSection.style.display = "none";
     productFormContainer.style.display = "block";
+
   } catch (err) {
-    console.error(err);
-    showStatus("error", "❌ Error sending screenshot. Try again.", 4000);
+    showStatus("error", "Error sending screenshot. Try again.", 3000);
   }
 });
 
-// PRODUCT FORM SUBMISSION
+/* ---------------------------------------------
+   PRODUCT SUBMISSION
+----------------------------------------------*/
 productForm.addEventListener("submit", async function (e) {
   e.preventDefault();
 
@@ -182,10 +206,10 @@ productForm.addEventListener("submit", async function (e) {
   const files = [...document.getElementById("productImage").files];
 
   if (!name || !desc || !price || !whatsapp || !contact || files.length === 0) {
-    return showStatus("error", "Please fill all fields and select at least one file", 3000);
+    return showStatus("error", "Please fill all fields and upload at least one image", 3000);
   }
 
-  showStatus("loading", "Submitting your product... please wait");
+  showStatus("loading", "Submitting your product...");
 
   const textMsg =
     `🛍️ *NEW PRODUCT SUBMISSION*\n\n` +
@@ -207,10 +231,13 @@ productForm.addEventListener("submit", async function (e) {
     });
 
     for (const file of files) {
-      const photoData = new FormData();
-      photoData.append("chat_id", ADMIN_ID);
-      photoData.append("photo", file);
-      await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendPhoto`, { method: "POST", body: photoData });
+      const form = new FormData();
+      form.append("chat_id", ADMIN_ID);
+      form.append("photo", file);
+      await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendPhoto`, {
+        method: "POST",
+        body: form
+      });
     }
 
     await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendMessage`, {
@@ -223,13 +250,12 @@ productForm.addEventListener("submit", async function (e) {
       })
     });
 
-    showStatus("success", "Product sent successfully! Admin is reviewing your product.", 5000);
+    showStatus("success", "Product sent successfully!", 5000);
     productForm.style.display = "none";
     submitAnotherBtn.style.display = "block";
 
   } catch (err) {
-    console.error(err);
-    showStatus("error", "❌ Error sending product", 4000);
+    showStatus("error", "Error submitting product", 3000);
   }
 });
 
