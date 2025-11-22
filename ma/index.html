@@ -113,7 +113,7 @@ if (typeof premiumUsers !== "undefined" && premiumUsers.includes(TELEGRAM_USER_I
   shareSection.style.display = "block"; // non-premium must share first
 }
 
-// AD SYSTEM
+// AD SYSTEM - SEQUENTIAL
 function showAdIfNotPremium() {
   try {
     if (typeof show_9830606 === "function" &&
@@ -123,21 +123,25 @@ function showAdIfNotPremium() {
   } catch (e) { console.error("Ad error:", e); }
 }
 
-const AD_DURATION = 15000;
-const EXTRA_WAIT = 10000;
-let adIsShowing = false;
+const AD_DURATION = 15000; // 15 seconds
+const WAIT_BETWEEN_ADS = 10000; // 10 seconds between ads
+let adLoopActive = true;
 
-function playAdOnce() {
-  if (adIsShowing) return;
-  adIsShowing = true;
-
-  showAdIfNotPremium();
-
-  setTimeout(() => { adIsShowing = false; }, AD_DURATION + EXTRA_WAIT);
+async function playAdSequentially() {
+  while (adLoopActive) {
+    if (!premiumUsers || !premiumUsers.includes(TELEGRAM_USER_ID)) {
+      showAdIfNotPremium();
+      await new Promise(resolve => setTimeout(resolve, AD_DURATION));
+      await new Promise(resolve => setTimeout(resolve, WAIT_BETWEEN_ADS));
+    } else {
+      adLoopActive = false; // stop ads for premium users
+    }
+  }
 }
 
-function startAdLoop() { playAdOnce(); setInterval(playAdOnce, AD_DURATION + EXTRA_WAIT); }
-window.addEventListener("load", startAdLoop);
+window.addEventListener("load", () => {
+  playAdSequentially();
+});
 
 // SHARE VERIFICATION
 verifyBtn.addEventListener("click", async () => {
@@ -159,7 +163,7 @@ verifyBtn.addEventListener("click", async () => {
 
     showStatus("success", "✅ Screenshot sent! You can now submit your product.", 4000);
     shareSection.style.display = "none";
-    productFormContainer.style.display = "block"; // show form
+    productFormContainer.style.display = "block";
   } catch (err) {
     console.error(err);
     showStatus("error", "❌ Error sending screenshot. Try again.", 4000);
@@ -222,7 +226,6 @@ productForm.addEventListener("submit", async function (e) {
     showStatus("success", "Product sent successfully! Admin is reviewing your product.", 5000);
     productForm.style.display = "none";
     submitAnotherBtn.style.display = "block";
-    playAdOnce();
 
   } catch (err) {
     console.error(err);
@@ -234,7 +237,6 @@ submitAnotherBtn.addEventListener("click", () => {
   productForm.reset();
   productForm.style.display = "block";
   submitAnotherBtn.style.display = "none";
-  playAdOnce();
 });
 
 removeAdsBtn.addEventListener("click", () => {
