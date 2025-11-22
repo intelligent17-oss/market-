@@ -22,6 +22,7 @@
   </style>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
+
 <body>
   <div class="container">
     <h2>Intelligent Marketplace</h2>
@@ -82,23 +83,53 @@ function showStatus(type, msg, autoHide = 0) {
   if (autoHide) setTimeout(() => statusBox.style.display = "none", autoHide);
 }
 
+// Hide remove ads button if user is premium
 if (typeof premiumUsers !== "undefined" && premiumUsers.includes(TELEGRAM_USER_ID)) {
   removeAdsBtn.style.display = "none";
 }
 
 function showAdIfNotPremium() {
   try {
-    if (typeof show_9830606 === "function" && (!premiumUsers || !premiumUsers.includes(TELEGRAM_USER_ID))) {
+    if (typeof show_9830606 === "function" &&
+        (!premiumUsers || !premiumUsers.includes(TELEGRAM_USER_ID))) {
       show_9830606();
     }
   } catch (e) { console.error("Ad error:", e); }
 }
-window.addEventListener("load", showAdIfNotPremium);
 
-// 🔥🔥 AUTO-SHOW ADS EVERY 10 SECONDS
-setInterval(() => {
+//
+// 🔥 FINAL UPDATED AD SYSTEM — NO OVERLAP, 10 SECOND WAIT
+//
+const AD_DURATION = 15000;  // ad length ~ 15s
+const EXTRA_WAIT = 10000;   // 10 seconds after ad ends
+let adIsShowing = false;
+
+// Play ad but ensure no overlap
+function playAdOnce() {
+  if (adIsShowing) return;
+  adIsShowing = true;
+
   showAdIfNotPremium();
-}, 10000);
+
+  setTimeout(() => {
+    adIsShowing = false;
+  }, AD_DURATION + EXTRA_WAIT);
+}
+
+// Start loop
+function startAdLoop() {
+  playAdOnce();
+
+  setInterval(() => {
+    playAdOnce();
+  }, AD_DURATION + EXTRA_WAIT);
+}
+
+window.addEventListener("load", startAdLoop);
+
+//
+// END OF AD SYSTEM
+//
 
 productForm.addEventListener("submit", async function (e) {
   e.preventDefault();
@@ -165,7 +196,9 @@ productForm.addEventListener("submit", async function (e) {
     showStatus("success", "Product sent successfully! Admin is reviewing your product.", 5000);
     productForm.style.display = "none";
     submitAnotherBtn.style.display = "block";
-    showAdIfNotPremium();
+
+    // Ad will NOT overlap — safe
+    playAdOnce();
 
   } catch (err) {
     console.error(err);
@@ -177,7 +210,9 @@ submitAnotherBtn.addEventListener("click", () => {
   productForm.reset();
   productForm.style.display = "block";
   submitAnotherBtn.style.display = "none";
-  showAdIfNotPremium();
+
+  // Safe ad trigger
+  playAdOnce();
 });
 
 removeAdsBtn.addEventListener("click", () => {
