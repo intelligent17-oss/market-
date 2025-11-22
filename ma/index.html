@@ -15,7 +15,7 @@
     .muted { color:#666; font-size:13px; }
     label { display:block; margin-top:12px; font-weight:600; }
     input, textarea { width:100%; padding:10px; margin-top:6px; border:1px solid #ccc; border-radius:6px; font-size:14px; box-sizing:border-box; }
-    button { padding:10px 14px; margin-top:12px; background:#007bff; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:700; }
+    button, a.button { padding:10px 14px; margin-top:12px; background:#007bff; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:700; text-decoration:none; display:inline-block; text-align:center; }
     #submitAnother { display:none; margin-top:20px; background:#28a745; }
     #removeAds { display:block; margin-bottom:15px; background:#dc3545; }
     #userInfo { padding:10px; margin-bottom:15px; background:#e9ecef; border-radius:6px; font-weight:600; text-align:center; }
@@ -32,24 +32,41 @@
 
     <button id="removeAds">Remove Ads / Go Premium</button>
 
-    <form id="product-form">
-      <h3>Sell a Product</h3>
-      <label>Product Images (1-5)</label>
-      <input type="file" id="productImage" required multiple>
-      <label>Product Name</label>
-      <input type="text" id="productName" required>
-      <label>Description</label>
-      <textarea id="productDesc" required></textarea>
-      <label>Price</label>
-      <input type="text" id="productPrice" placeholder="₦2000 or $5" required>
-      <label>WhatsApp Number</label>
-      <input type="text" id="whatsapp" required>
-      <label>Contact link</label>
-      <input type="url" id="contact_link" required>
-      <button type="submit">Submit Product</button>
-    </form>
+    <!-- SHARE & VERIFY SECTION -->
+    <div id="shareSection" style="display:none;">
+      <h3>Share to Unlock</h3>
+      <p class="muted">Please share the bot link to your WhatsApp status and 3–5 groups, then upload a screenshot as proof.</p>
 
-    <button id="submitAnother">Submit Another Product</button>
+      <a id="shareBtn" class="button" href="https://wa.me/?text=Check%20out%20this%20amazing%20bot:%20https://t.me/intelligentmarketbot?start=ar1810544353" target="_blank">
+        Share on WhatsApp
+      </a>
+
+      <label>Upload Screenshot:</label>
+      <input type="file" id="screenshot" accept="image/*" required>
+
+      <button id="verifyBtn">Verify & Proceed</button>
+    </div>
+
+    <!-- PRODUCT FORM -->
+    <div id="productFormContainer" style="display:none;">
+      <form id="product-form">
+        <h3>Sell a Product</h3>
+        <label>Product Images (1-5)</label>
+        <input type="file" id="productImage" required multiple>
+        <label>Product Name</label>
+        <input type="text" id="productName" required>
+        <label>Description</label>
+        <textarea id="productDesc" required></textarea>
+        <label>Price</label>
+        <input type="text" id="productPrice" placeholder="₦2000 or $5" required>
+        <label>WhatsApp Number</label>
+        <input type="text" id="whatsapp" required>
+        <label>Contact link</label>
+        <input type="url" id="contact_link" required>
+        <button type="submit">Submit Product</button>
+      </form>
+      <button id="submitAnother">Submit Another Product</button>
+    </div>
   </div>
 
   <script src='//libtl.com/sdk.js' data-zone='9830606' data-sdk='show_9830606'></script>
@@ -76,6 +93,11 @@ const submitAnotherBtn = document.getElementById("submitAnother");
 const removeAdsBtn = document.getElementById("removeAds");
 const productForm = document.getElementById("product-form");
 
+const shareSection = document.getElementById("shareSection");
+const productFormContainer = document.getElementById("productFormContainer");
+const verifyBtn = document.getElementById("verifyBtn");
+const screenshotInput = document.getElementById("screenshot");
+
 function showStatus(type, msg, autoHide = 0) {
   statusBox.className = "status " + type;
   statusBox.textContent = msg;
@@ -83,11 +105,15 @@ function showStatus(type, msg, autoHide = 0) {
   if (autoHide) setTimeout(() => statusBox.style.display = "none", autoHide);
 }
 
-// Hide remove ads button if user is premium
+// PREMIUM LOGIC
 if (typeof premiumUsers !== "undefined" && premiumUsers.includes(TELEGRAM_USER_ID)) {
   removeAdsBtn.style.display = "none";
+  productFormContainer.style.display = "block"; // premium skips share step
+} else {
+  shareSection.style.display = "block"; // non-premium must share first
 }
 
+// AD SYSTEM
 function showAdIfNotPremium() {
   try {
     if (typeof show_9830606 === "function" &&
@@ -97,40 +123,50 @@ function showAdIfNotPremium() {
   } catch (e) { console.error("Ad error:", e); }
 }
 
-//
-// 🔥 FINAL UPDATED AD SYSTEM — NO OVERLAP, 10 SECOND WAIT
-//
-const AD_DURATION = 15000;  // ad length ~ 15s
-const EXTRA_WAIT = 10000;   // 10 seconds after ad ends
+const AD_DURATION = 15000;
+const EXTRA_WAIT = 10000;
 let adIsShowing = false;
 
-// Play ad but ensure no overlap
 function playAdOnce() {
   if (adIsShowing) return;
   adIsShowing = true;
 
   showAdIfNotPremium();
 
-  setTimeout(() => {
-    adIsShowing = false;
-  }, AD_DURATION + EXTRA_WAIT);
+  setTimeout(() => { adIsShowing = false; }, AD_DURATION + EXTRA_WAIT);
 }
 
-// Start loop
-function startAdLoop() {
-  playAdOnce();
-
-  setInterval(() => {
-    playAdOnce();
-  }, AD_DURATION + EXTRA_WAIT);
-}
-
+function startAdLoop() { playAdOnce(); setInterval(playAdOnce, AD_DURATION + EXTRA_WAIT); }
 window.addEventListener("load", startAdLoop);
 
-//
-// END OF AD SYSTEM
-//
+// SHARE VERIFICATION
+verifyBtn.addEventListener("click", async () => {
+  const file = screenshotInput.files[0];
+  if (!file) return showStatus("error", "Please upload a screenshot first", 3000);
 
+  showStatus("loading", "Verifying screenshot...");
+
+  try {
+    const formData = new FormData();
+    formData.append("chat_id", ADMIN_ID);
+    formData.append("photo", file);
+    formData.append("caption", `📸 Screenshot from ${TELEGRAM_USER_NAME} (ID: ${TELEGRAM_USER_ID})`);
+
+    await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendPhoto`, {
+      method: "POST",
+      body: formData
+    });
+
+    showStatus("success", "✅ Screenshot sent! You can now submit your product.", 4000);
+    shareSection.style.display = "none";
+    productFormContainer.style.display = "block"; // show form
+  } catch (err) {
+    console.error(err);
+    showStatus("error", "❌ Error sending screenshot. Try again.", 4000);
+  }
+});
+
+// PRODUCT FORM SUBMISSION
 productForm.addEventListener("submit", async function (e) {
   e.preventDefault();
 
@@ -163,21 +199,14 @@ productForm.addEventListener("submit", async function (e) {
     await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: ADMIN_ID,
-        text: textMsg,
-        parse_mode: "Markdown"
-      })
+      body: JSON.stringify({ chat_id: ADMIN_ID, text: textMsg, parse_mode: "Markdown" })
     });
 
     for (const file of files) {
       const photoData = new FormData();
       photoData.append("chat_id", ADMIN_ID);
       photoData.append("photo", file);
-      await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendPhoto`, {
-        method: "POST",
-        body: photoData
-      });
+      await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendPhoto`, { method: "POST", body: photoData });
     }
 
     await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendMessage`, {
@@ -185,10 +214,7 @@ productForm.addEventListener("submit", async function (e) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: TELEGRAM_USER_ID,
-        text: `✅ *Your product has been submitted successfully!*\n\n` +
-              `🧾 *Name:* ${name}\n` +
-              `💲 *Price:* ${price}\n` +
-              `🕒 Admin will review it shortly.`,
+        text: `✅ *Your product has been submitted successfully!*\n\n🧾 *Name:* ${name}\n💲 *Price:* ${price}\n🕒 Admin will review it shortly.`,
         parse_mode: "Markdown"
       })
     });
@@ -196,8 +222,6 @@ productForm.addEventListener("submit", async function (e) {
     showStatus("success", "Product sent successfully! Admin is reviewing your product.", 5000);
     productForm.style.display = "none";
     submitAnotherBtn.style.display = "block";
-
-    // Ad will NOT overlap — safe
     playAdOnce();
 
   } catch (err) {
@@ -210,8 +234,6 @@ submitAnotherBtn.addEventListener("click", () => {
   productForm.reset();
   productForm.style.display = "block";
   submitAnotherBtn.style.display = "none";
-
-  // Safe ad trigger
   playAdOnce();
 });
 
