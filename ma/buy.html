@@ -268,12 +268,12 @@ myProductBtn.onclick = () => {
   if(hasProducts){
     renderProducts(true);
   } else {
-    container.innerHTML = `<p>You haven't posted any product yet. <a href="sell.html">Click here to start posting!</a></p>`;
+    container.innerHTML = `<p>You haven't posted any product yet. <a href="index.html">Click here to start posting!</a></p>`;
   }
 };
 
 // ===== NAVIGATION =====
-document.getElementById('sellBtn').onclick=()=>{ location.href='sell.html'; };
+document.getElementById('sellBtn').onclick=()=>{ location.href='index.html'; };
 document.getElementById('buyAccountBtn').onclick=()=>{ location.reload(); };
 
 // ===== INIT =====
