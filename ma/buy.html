@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buy Product — Intelligent Marketplace</title>
+<style>
+  body { font-family: Arial,sans-serif; padding:20px; background:#f7f7f7; color:#111; }
+  h2,h3 { margin-bottom:10px; }
+  .product { background:#fff; padding:15px; margin:15px 0; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
+  .product img { width:100%; max-width:300px; border-radius:6px; display:block; margin-bottom:10px; }
+  .product-details p { margin:5px 0; }
+  button { padding:10px; margin:5px 0; cursor:pointer; border:none; border-radius:6px; background:#000; color:#fff; }
+  #buyModal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
+  #buyModal .modal-content { background:#fff; padding:20px; border-radius:10px; max-width:500px; width:100%; }
+  #buyModal input { width:100%; padding:10px; margin:10px 0; border-radius:6px; border:1px solid #ccc; }
+  .nav { display:flex; gap:10px; margin-top:20px; }
+  .nav button { flex:1; }
+  a { color:blue; }
+  #userInfo { margin-bottom:15px; display:flex; align-items:center; gap:10px; }
+  #userInfo img { border-radius:50%; width:60px; height:60px; object-fit:cover; }
+</style>
+</head>
+<body>
+
+<h2>Intelligent Marketplace — Buy Products</h2>
+
+<!-- Telegram User Info -->
+<div id="userInfo">
+  <img id="profilePic" src="https://via.placeholder.com/60" alt="Profile">
+  <div>
+    <p id="fullName"></p>
+    <p id="username"></p>
+    <p id="userId"></p>
+  </div>
+</div>
+
+<!-- Product Container -->
+<div id="productsContainer"></div>
+
+<!-- Buy Modal -->
+<div id="buyModal">
+  <div class="modal-content">
+    <h3>Complete Your Payment</h3>
+    <p id="paymentInfo"></p>
+    <label>Upload Payment Screenshot:</label>
+    <input type="file" id="paymentScreenshot" accept="image/*">
+    <label>Contact Info (Whatsapp/Telegram/Email):</label>
+    <input type="text" id="buyerContact" placeholder="Enter your contact info">
+    <button id="submitPayment">Submit Payment</button>
+    <button id="closeModal" style="background:#dc3545;">Cancel</button>
+  </div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="nav">
+  <button id="sellBtn">Sell Account</button>
+  <button id="myProductBtn" class="hidden">My Product</button>
+  <button id="buyAccountBtn">Buy Account</button>
+</div>
+
+<!-- Monetag SDK -->
+<script src="//libtl.com/sdk.js" data-zone="9830606" data-sdk="show_9830606"></script>
+
+<script>
+// ===== CONFIG =====
+const BOT_TOKEN = "7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
+const ADMIN_ID = "8140042906";
+
+// Telegram user info
+const tgUser = (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe.user) || {};
+document.getElementById('fullName').textContent = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
+document.getElementById('username').textContent = tgUser.username ? '@' + tgUser.username : '';
+document.getElementById('userId').textContent = 'Telegram ID: ' + (tgUser.id || '');
+if(tgUser.photo_url) document.getElementById('profilePic').src = tgUser.photo_url;
+
+// ===== PRODUCTS ARRAY =====
+const productsData = [
+  {
+    id:"P001",
+    name:"Facebook Account",
+    description:"Very good and strong.",
+    price:"4500",
+    currency:"NGN",
+    image:"https://i.ibb.co/1f9GfgZL/IMG-20251124-000420-272.jpg",
+    url:"https://www.facebook.com/profile.php?id=61582415454848",
+    sellerId:"8111362786",
+    sellerContact:"+2349166314650",
+    dateTime:"2025-11-23 20:00"
+  },
+  {
+    id:"P002",
+    name:"Tiktok account",
+    description:"Active Tiktok account with 12+ followers.",
+    price:"5",
+    currency:"USD",
+    image:"https://i.ibb.co/ksGYg1Vx/Screenshot-20251124-000807.png",
+    url:"https://vm.tiktok.com/ZSHTeW8bRNKww-8KMhW/",
+    sellerId:"6940101627",
+    sellerContact:"+2348121697423",
+    dateTime:"2025-11-23 21:00"
+  }
+];
+
+// ===== MONETAG ADS =====
+function showAd() {
+    if (typeof show_9830606 === "function") show_9830606();
+    else setTimeout(showAd,500);
+}
+window.addEventListener("load",()=>{ setTimeout(()=>{ showAd(); setInterval(showAd,30000); },3000); });
+
+// ===== PRODUCTS RENDER =====
+const container = document.getElementById('productsContainer');
+const myProductBtn = document.getElementById('myProductBtn');
+let currentProduct=null;
+
+function renderProducts(isMyProduct=false){
+  container.innerHTML="";
+  let hasMyProduct=false;
+  productsData.forEach((prod)=>{
+    const isOwner = tgUser.id && tgUser.id == prod.sellerId;
+    if(isMyProduct && !isOwner) return; // show only user's own products
+
+    const div = document.createElement('div');
+    div.className="product";
+    div.innerHTML=`
+      <img src="${prod.image}" alt="${prod.name}">
+      <div class="product-details">
+        <p>📦 <b>${prod.name}</b></p>
+        <p>🔗 URL: <a href="${prod.url}" target="_blank">${prod.url}</a></p>
+        <p>💲 Price: ${prod.price} ${prod.currency}</p>
+        <p>📝 Description: ${prod.description}</p>
+        <p>🆔 Product ID: ${prod.id}</p>
+        <p>👤 Seller ID: ${prod.sellerId}</p>
+        <p class="sellerContact" style="display:none;">📱 Contact: ${prod.sellerContact}</p>
+        <p>🗓 Date & Time: ${prod.dateTime}</p>
+        ${!isMyProduct ? '<button class="buyBtn">Buy Now</button>' : ''}
+        ${isOwner ? '<button class="deleteBtn" style="background:#dc3545;">Delete</button>' : ''}
+      </div>
+    `;
+    container.appendChild(div);
+    if(isOwner) hasMyProduct=true;
+  });
+
+  if(hasMyProduct) myProductBtn.classList.remove('hidden');
+  attachEvents();
+}
+
+// ===== EVENTS =====
+function attachEvents() {
+  document.querySelectorAll('.buyBtn').forEach((btn,i)=>{
+    btn.onclick=()=>{ currentProduct=productsData[i]; openBuyModal(); };
+  });
+  document.querySelectorAll('.deleteBtn').forEach((btn,i)=>{
+    btn.onclick=()=>{ deleteProduct(i); };
+  });
+}
+
+// ===== BUY MODAL =====
+const buyModal = document.getElementById('buyModal');
+const paymentInfo = document.getElementById('paymentInfo');
+const screenshotInput = document.getElementById('paymentScreenshot');
+const contactInput = document.getElementById('buyerContact');
+document.getElementById('closeModal').onclick=()=>{ buyModal.style.display="none"; };
+
+function openBuyModal(){
+  const fee = currentProduct.currency == "NGN" ? 1000 : 1;
+  const total = parseFloat(currentProduct.price) + fee;
+
+  paymentInfo.innerHTML = `
+    <b>Product:</b> ${currentProduct.name}<br>
+    <b>Price:</b> ${currentProduct.price} ${currentProduct.currency}<br>
+    <b>Fee:</b> ${fee} ${currentProduct.currency}<br>
+    <div style="background:#ffe6e6; color:#d8000c; font-weight:bold; font-size:20px; padding:10px; border-radius:8px; margin:10px 0;">
+      Total Payment: ${total} ${currentProduct.currency}<br><small>Total includes fee</small>
+    </div>
+    <b>Payment Instructions:</b><br>
+    Nigeria: Opay - 9114301708 - Ayomide Abdumalik olatunji<br>
+    Foreigner BTC: bc1qxhyddpkgvdc68tj9xk5gf5k2vnxmnfy4xrwwr4<br>
+    After payment, upload screenshot and provide your contact info.
+  `;
+
+  contactInput.value = "";
+  screenshotInput.value = "";
+  buyModal.style.display = "flex";
+}
+
+// ===== SUBMIT PAYMENT =====
+document.getElementById('submitPayment').onclick = async () => {
+  const file = screenshotInput.files[0];
+  const contact = contactInput.value.trim();
+  if (!file) return alert("Upload screenshot");
+  if (!contact) return alert("Enter contact info");
+
+  const dt = new Date().toLocaleString('en-GB',{timeZone:'Africa/Lagos'});
+  const fee = currentProduct.currency == "NGN" ? 1000 : 1;
+  const total = parseFloat(currentProduct.price) + fee;
+
+  // Send to admin via Telegram bot
+  const form = new FormData();
+  form.append("chat_id", ADMIN_ID);
+  form.append("photo", file);
+  form.append("caption",
+    `📌 New Product Purchase Request\n`+
+    `Product: ${currentProduct.name}\n`+
+    `Product ID: ${currentProduct.id}\n`+
+    `Price: ${currentProduct.price} ${currentProduct.currency}\n`+
+    `Fee: ${fee} ${currentProduct.currency}\n`+
+    `Total Payment: ${total} ${currentProduct.currency}\n`+
+    `Seller ID: ${currentProduct.sellerId}\n`+
+    `Seller Contact: ${currentProduct.sellerContact}\n`+
+    `Buyer ID: ${tgUser.id}\n`+
+    `Buyer Contact: ${contact}\n`+
+    `Date & Time: ${dt}`
+  );
+  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`,{method:"POST",body:form});
+
+  // Notify seller
+  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      chat_id:currentProduct.sellerId,
+      text:`📌 New Pending Payment\nProduct: ${currentProduct.name}\nPrice: ${currentProduct.price} ${currentProduct.currency}\nFee: ${fee} ${currentProduct.currency}\nTotal Payment: ${total} ${currentProduct.currency}\nDate & Time: ${dt}`
+    })
+  });
+
+  // Notify buyer
+  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      chat_id:tgUser.id,
+      text:`✅ Payment submitted for "${currentProduct.name}" (${currentProduct.id})\nTotal Paid: ${total} ${currentProduct.currency}\nAdmin will review your payment.`
+    })
+  });
+
+  alert(`Payment submitted successfully!\nTotal Paid: ${total} ${currentProduct.currency}\nAdmin will review your payment.`);
+  buyModal.style.display="none";
+};
+
+// ===== DELETE PRODUCT =====
+function deleteProduct(index){
+  const prod = productsData[index];
+  if(confirm(`Are you sure to delete product id=${prod.id}?`)){
+    const dt = new Date().toLocaleString('en-GB',{timeZone:'Africa/Lagos'});
+    // Send delete request to admin
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        chat_id:ADMIN_ID,
+        text:`🗑 Delete Request\nProduct: ${prod.name}\nID: ${prod.id}\nSeller ID: ${prod.sellerId}\nDate & Time: ${dt}`
+      })
+    });
+    alert("Delete request sent to admin. Your product will be deleted soon.");
+  }
+}
+
+// ===== MY PRODUCT BUTTON =====
+myProductBtn.onclick = () => {
+  const hasProducts = productsData.some(p => tgUser.id && tgUser.id == p.sellerId);
+  if(hasProducts){
+    renderProducts(true); // show only user's products
+  } else {
+    container.innerHTML = `<p>You haven't posted any product yet. <a href="sell.html">Click here to start posting!</a></p>`;
+  }
+};
+
+// ===== NAVIGATION =====
+document.getElementById('sellBtn').onclick=()=>{ location.href='sell.html'; };
+document.getElementById('buyAccountBtn').onclick=()=>{ location.reload(); };
+
+// ===== INIT =====
+renderProducts();
+</script>
+</body>
+</html>
