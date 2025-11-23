@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Buy Product — Intelligent Marketplace</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   body { font-family: Arial,sans-serif; padding:20px; background:#f7f7f7; color:#111; }
   h2,h3 { margin-bottom:10px; }
@@ -63,12 +64,18 @@
 <script src="//libtl.com/sdk.js" data-zone="9830606" data-sdk="show_9830606"></script>
 
 <script>
+// ==========================
+//  INSTALL TELEGRAM WEBAPP
+// ==========================
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
+
 // ===== CONFIG =====
 const BOT_TOKEN = "7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
 const ADMIN_ID = "8140042906";
 
 // Telegram user info
-const tgUser = (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe.user) || {};
+const tgUser = Telegram.WebApp.initDataUnsafe.user || {};
 document.getElementById('fullName').textContent = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
 document.getElementById('username').textContent = tgUser.username ? '@' + tgUser.username : '';
 document.getElementById('userId').textContent = 'Telegram ID: ' + (tgUser.id || '');
@@ -119,7 +126,7 @@ function renderProducts(isMyProduct=false){
   let hasMyProduct=false;
   productsData.forEach((prod)=>{
     const isOwner = tgUser.id && tgUser.id == prod.sellerId;
-    if(isMyProduct && !isOwner) return; // show only user's own products
+    if(isMyProduct && !isOwner) return;
 
     const div = document.createElement('div');
     div.className="product";
@@ -196,7 +203,6 @@ document.getElementById('submitPayment').onclick = async () => {
   const fee = currentProduct.currency == "NGN" ? 1000 : 1;
   const total = parseFloat(currentProduct.price) + fee;
 
-  // Send to admin via Telegram bot
   const form = new FormData();
   form.append("chat_id", ADMIN_ID);
   form.append("photo", file);
@@ -244,7 +250,6 @@ function deleteProduct(index){
   const prod = productsData[index];
   if(confirm(`Are you sure to delete product id=${prod.id}?`)){
     const dt = new Date().toLocaleString('en-GB',{timeZone:'Africa/Lagos'});
-    // Send delete request to admin
     fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
       method:"POST",
       headers:{"Content-Type":"application/json"},
@@ -261,7 +266,7 @@ function deleteProduct(index){
 myProductBtn.onclick = () => {
   const hasProducts = productsData.some(p => tgUser.id && tgUser.id == p.sellerId);
   if(hasProducts){
-    renderProducts(true); // show only user's products
+    renderProducts(true);
   } else {
     container.innerHTML = `<p>You haven't posted any product yet. <a href="sell.html">Click here to start posting!</a></p>`;
   }
