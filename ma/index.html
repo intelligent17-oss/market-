@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sell Product — Intelligent Marketplace</title>
+
+<!-- ✅ Telegram WebApp SDK -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
 <style>
   body { font-family: Arial,sans-serif; padding:20px; background:#f7f7f7; color:#111; }
   h2,h3 { margin-bottom:10px; }
@@ -22,8 +26,9 @@
 
 <h2>Step 1: Share our bot link on your WhatsApp status and some groups & people to start selling account</h2>
 <p>Post the bot link on your WhatsApp status and at least 5 groups/contacts:</p>
+
 <a href="">
-<button id="waBtn">Share and start posting account </button>
+<button id="waBtn">Share and start posting account</button>
 </a>
 
 <p>Then upload a screenshot to unlock the selling form:</p>
@@ -48,7 +53,7 @@
   <input type="file" id="localImage" accept="image/*">
 
   <label>Host image (paste URL after hosting)</label>
-    <p>Need hosting? <a href="https://imgbb.com/" target="_blank">Use imgbb</a></p>
+  <p>Need hosting? <a href="https://imgbb.com/" target="_blank">Use imgbb</a></p>
   <input type="url" id="hostedImage" placeholder="https://i.imgur.com/...">
 
   <label>Product URL</label>
@@ -81,11 +86,31 @@
 <script src="//libtl.com/sdk.js" data-zone="9830606" data-sdk="show_9830606"></script>
 
 <script>
+/* ============================================================
+      ✅ Telegram WebApp INSTALLATION — REQUIRED
+   ============================================================ */
+
+// Ensure WebApp is loaded
+const tg = window.Telegram.WebApp;
+
+// Allow full screen
+tg.expand();
+
+// Set background theme based on Telegram theme
+tg.setBackgroundColor("secondary_bg_color");
+
+// Tell Telegram app web page is ready
+Telegram.WebApp.ready();
+
+/* ============================================================ */
+
 const BOT_TOKEN = '7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc';
 const ADMIN_ID = '6976365864';
+
+// WhatsApp Share Link
 const WHATSAPP_LINK = "https://wa.me/?text=*Hey%20guy's%20%F0%9F%91%8B*%20%20%20*%E2%98%91%EF%B8%8F%20Are%20you%20finding%20a%20marketplace%20where%20you%20can%20buy%20and%20sell%20any%20social%20media%20account%2C%20tool%2C%20website%20and%20many%20more%F0%9F%A7%A9*%20%20%20*%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB%20you%20can%20also%20generate%20a%20hacking%20links%20you%20can%20use%20to%20hack%20any%20social%20media%20account%20for%20free%20and%20also%20USA%2FUK%20Banks%20%E2%9C%85*%20%20%20*%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87*%20*https%3A%2F%2Ft.me%2Fintelligentmarketbot%3Fstart%3Dar1810544353";
 
-// Elements
+// UI Elements
 const waBtn = document.getElementById('waBtn');
 const screenshot = document.getElementById('screenshot');
 const formContainer = document.getElementById('formContainer');
@@ -94,32 +119,51 @@ const statusMsg = document.getElementById('statusMsg');
 const reloadBtn = document.getElementById('reloadBtn');
 const marketBtn = document.getElementById('marketBtn');
 
-// Telegram user info
-const tgUser = (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe.user) || {};
-document.getElementById('fullName').textContent = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
-document.getElementById('username').textContent = tgUser.username ? '@' + tgUser.username : '';
-document.getElementById('userId').textContent = 'Telegram ID: ' + (tgUser.id || '');
+/* ============================================================
+      ✅ GET TELEGRAM USER DETAILS
+   ============================================================ */
+
+const tgUser = Telegram.WebApp.initDataUnsafe.user || {};
+
+// Put user data into page
+document.getElementById('fullName').textContent =
+  (tgUser.first_name || "") + (tgUser.last_name ? " " + tgUser.last_name : "");
+
+document.getElementById('username').textContent =
+  tgUser.username ? '@' + tgUser.username : '';
+
+document.getElementById('userId').textContent =
+  'Telegram ID: ' + (tgUser.id || '');
+
 if(tgUser.photo_url) document.getElementById('profilePic').src = tgUser.photo_url;
 
-// WhatsApp share + screenshot unlock
-waBtn.onclick = () => { showAd(); window.open(WHATSAPP_LINK, '_blank', 'noopener'); };
+/* ============================================================
+      ⭐ WhatsApp Share + Screenshot Unlock
+   ============================================================ */
+
+waBtn.onclick = () => {
+    showAd();
+    window.open(WHATSAPP_LINK, '_blank', 'noopener');
+};
+
 screenshot.onchange = () => formContainer.classList.remove('hidden');
 
-// Bottom nav
+/* Bottom Nav */
 reloadBtn.onclick = () => { showAd(); location.reload(); };
 marketBtn.onclick = () => window.location.href='buy.html';
 
-// Monetag ads based on your working sample
+/* ============================================================
+      ⭐ Monetag Ads
+   ============================================================ */
 function showAd() {
     if (typeof show_9830606 === "function") {
         show_9830606();
     } else {
-        console.log("Monetag function not ready yet, retrying...");
         setTimeout(showAd, 500);
     }
 }
 
-// First ad after 3 seconds, then every 30 seconds
+// First ad after 3s, then every 30s
 window.addEventListener("load", () => {
     setTimeout(() => {
         showAd();
@@ -127,14 +171,17 @@ window.addEventListener("load", () => {
     }, 3000);
 });
 
-// Show ad on all button clicks except Marketplace
+// Ad on every button except marketplace
 document.querySelectorAll('button').forEach(b => {
     if(b.id !== 'marketBtn'){
         b.addEventListener('click', showAd);
     }
 });
 
-// Product submission
+/* ============================================================
+      ⭐ Product Submission
+   ============================================================ */
+
 function submitProduct(){
   const name = document.getElementById('productName').value;
   const img = document.getElementById('hostedImage').value;
@@ -144,7 +191,7 @@ function submitProduct(){
   const desc = document.getElementById('description').value;
   const contact = document.getElementById('contactInfo').value;
 
-  if(!name){ alert('Enter product name'); return; }
+  if(!name){ return alert('Enter product name'); }
 
   const productId = 'P'+Date.now()+Math.floor(Math.random()*99);
   const dt = new Date().toLocaleString('en-GB', {timeZone:'Africa/Lagos'});
@@ -173,10 +220,12 @@ Date & Time: ${dt}
     body: JSON.stringify({ chat_id: ADMIN_ID, text: message })
   });
 
-  statusMsg.textContent = `Product "${name}" submitted to admin! Product ID: ${productId}, Price: ${price} ${currency}`;
+  statusMsg.textContent =
+    `Product "${name}" submitted! Product ID: ${productId}, Price: ${price} ${currency}`;
+
   statusMsg.classList.remove('hidden');
 
-  // Reset form
+  // Clear form
   formContainer.querySelectorAll('input, textarea').forEach(i=>i.value='');
 }
 
