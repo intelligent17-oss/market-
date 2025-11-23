@@ -1,274 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Intelligent Marketplace</title>
-  <style>
-    body { font-family: Arial, sans-serif; background:#f5f5f5; margin:0; padding:20px; }
-    .container { max-width:700px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.05); }
-    h2 { text-align:center; margin-top:0; }
-    .status { padding:10px; margin:10px 0; border-radius:6px; display:none; font-weight:600; }
-    .loading { background:#fff3cd; color:#856404; }
-    .success { background:#d4edda; color:#155724; }
-    .error { background:#f8d7da; color:#721c24; }
-    .muted { color:#666; font-size:13px; }
-    label { display:block; margin-top:12px; font-weight:600; }
-    input, textarea { width:100%; padding:10px; margin-top:6px; border:1px solid #ccc; border-radius:6px; font-size:14px; box-sizing:border-box; }
-    button, a.button { padding:10px 14px; margin-top:12px; background:#007bff; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:700; text-decoration:none; display:inline-block; text-align:center; }
-    #submitAnother { display:none; margin-top:20px; background:#28a745; }
-    #removeAds { display:block; margin-bottom:15px; background:#dc3545; }
-    #userInfo { padding:10px; margin-bottom:15px; background:#e9ecef; border-radius:6px; font-weight:600; text-align:center; }
-  </style>
-
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sell Product — Intelligent Marketplace</title>
+<style>
+  body { font-family: Arial,sans-serif; padding:20px; background:#f7f7f7; color:#111; }
+  h2,h3 { margin-bottom:10px; }
+  input, textarea, select, button { width:100%; padding:10px; margin:6px 0; }
+  button { background:black; color:white; border:none; cursor:pointer; }
+  button:disabled { background:#555; cursor:not-allowed; }
+  .hidden { display:none; }
+  .nav { display:flex; gap:10px; margin-top:20px; }
+  .nav button { flex:1; }
+  a { color:blue; }
+  #userInfo { margin-bottom:15px; }
+  #userInfo img { border-radius:50%; width:60px; height:60px; object-fit:cover; display:block; margin-bottom:5px; }
+</style>
 </head>
-
 <body>
-  <div class="container">
-    <h2>Intelligent Marketplace</h2>
 
-    <div id="userInfo"></div>
-    <div id="status" class="status"></div>
+<h2>Step 1: Share our bot link on your WhatsApp status and some groups & people to start selling account</h2>
+<p>Post the bot link on your WhatsApp status and at least 5 groups/contacts:</p>
+<a href="">
+<button id="waBtn">Share and start posting account </button>
+</a>
 
-    <button id="removeAds">Remove Ads / Go Premium</button>
+<p>Then upload a screenshot to unlock the selling form:</p>
+<input type="file" id="screenshot" accept="image/*">
 
-    <!-- SHARE SECTION -->
-    <div id="shareSection" style="display:none;">
-      <h3>Share this bot link to your whatsapp status and some groups and people to post your account for sale </h3>
-      <p class="muted">Please share the bot link to your WhatsApp status and 3–5 groups, then upload a screenshot as proof.</p>
+<div id="formContainer" class="hidden">
 
-      <a id="shareBtn" class="button" href="https://wa.me/?text=*Hey%20guy's%20%F0%9F%91%8B*%20%20%20*%E2%98%91%EF%B8%8F%20Are%20you%20finding%20a%20marketplace%20where%20you%20can%20buy%20and%20sell%20any%20social%20media%20account%2C%20tool%2C%20website%20and%20many%20more%F0%9F%A7%A9*%20%20%20*%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB%20you%20can%20also%20generate%20a%20hacking%20links%20you%20can%20use%20to%20hack%20any%20social%20media%20account%20for%20free%20and%20also%20USA%2FUK%20Banks%20%E2%9C%85*%20%20%20*%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87*%20*https%3A%2F%2Ft.me%2Fintelligentmarketbot%3Fstart%3Dar1810544353*" target="_blank">
-        Share on WhatsApp to sell account
-      </a>
-
-      <label>Upload Screenshot:</label>
-      <input type="file" id="screenshot" accept="image/*">
-
-      <button id="verifyBtn">Verify & Proceed</button>
-    </div>
-
-    <!-- PRODUCT FORM -->
-    <div id="productFormContainer" style="display:none;">
-      <form id="product-form">
-        <h3>Sell a Product</h3>
-
-        <label>Product Images (1-5)</label>
-        <input type="file" id="productImage" required multiple>
-
-        <label>Product Name</label>
-        <input type="text" id="productName" required>
-
-        <label>Description</label>
-        <textarea id="productDesc" required></textarea>
-
-        <label>Price</label>
-        <input type="text" id="productPrice" placeholder="₦2000 or $5" required>
-
-        <label>WhatsApp Number</label>
-        <input type="text" id="whatsapp" required>
-
-        <label>Contact link</label>
-        <input type="url" id="contact_link" required>
-
-        <button type="submit">Submit Product</button>
-      </form>
-
-      <button id="submitAnother">Submit Another Product</button>
-    </div>
+  <!-- Telegram user info -->
+  <div id="userInfo">
+    <h3>Logged in as:</h3>
+    <img id="profilePic" src="https://via.placeholder.com/60" alt="Profile">
+    <p id="fullName"></p>
+    <p id="username"></p>
+    <p id="userId"></p>
   </div>
 
-  <!-- AD SDK -->
-  <script src='//libtl.com/sdk.js' data-zone='9830606' data-sdk='show_9830606'></script>
-  <script src="premium.js"></script>
+  <h2>Step 2: Sell your product</h2>
+  <label>Product Name</label>
+  <input type="text" id="productName">
 
-  <script>
-const DEFAULT_BOT_TOKEN = "7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
-const ADMIN_ID = "6976365864";
+  <label>Upload local product image (preview only)</label>
+  <input type="file" id="localImage" accept="image/*">
 
-const tg = window.Telegram.WebApp;
-tg.expand();
+  <label>Host image (paste URL after hosting)</label>
+    <p>Need hosting? <a href="https://imgbb.com/" target="_blank">Use imgbb</a></p>
+  <input type="url" id="hostedImage" placeholder="https://i.imgur.com/...">
 
-const TELEGRAM_USER_ID = tg.initDataUnsafe?.user?.id || "000";
-const TELEGRAM_USER_NAME =
-  (tg.initDataUnsafe?.user?.first_name || "") +
-  (tg.initDataUnsafe?.user?.last_name ? " " + tg.initDataUnsafe.user.last_name : "") ||
-  "John Doe";
+  <label>Product URL</label>
+  <input type="url" id="productUrl" placeholder="https://...">
 
-document.getElementById("userInfo").textContent =
-  `Logged in as: ${TELEGRAM_USER_NAME} (ID: ${TELEGRAM_USER_ID})`;
+  <label>Price</label>
+  <input type="number" id="productPrice" placeholder="5000">
+  <select id="currency">
+    <option value="NGN">NGN</option>
+    <option value="USD">$ USD</option>
+  </select>
 
-const statusBox = document.getElementById("status");
-const submitAnotherBtn = document.getElementById("submitAnother");
-const removeAdsBtn = document.getElementById("removeAds");
-const productForm = document.getElementById("product-form");
+  <label>Description</label>
+  <textarea id="description"></textarea>
 
-const shareSection = document.getElementById("shareSection");
-const productFormContainer = document.getElementById("productFormContainer");
-const verifyBtn = document.getElementById("verifyBtn");
-const screenshotInput = document.getElementById("screenshot");
+  <label>Contact info (WhatsApp / Telegram / Other)</label>
+  <input type="text" id="contactInfo">
 
-function showStatus(type, msg, autoHide = 0) {
-  statusBox.className = "status " + type;
-  statusBox.textContent = msg;
-  statusBox.style.display = "block";
-  if (autoHide) setTimeout(() => statusBox.style.display = "none", autoHide);
-}
+  <button id="submitBtn">Submit Product</button>
 
-// PREMIUM LOGIC
-if (typeof premiumUsers !== "undefined" && premiumUsers.includes(TELEGRAM_USER_ID)) {
-  removeAdsBtn.style.display = "none";
-  productFormContainer.style.display = "block";
-} else {
-  shareSection.style.display = "block";
-}
+  <p id="statusMsg" class="hidden"></p>
+</div>
 
-/* ---------------------------------------------
-   STRICT SEQUENTIAL AD SYSTEM (NO OVERLAP)
-----------------------------------------------*/
-let isAdPlaying = false;
+<div class="nav">
+  <button id="reloadBtn">Sell Account</button>
+  <button id="marketBtn">Marketplace</button>
+</div>
 
-const AD_DURATION = 15000;  
-const WAIT_BETWEEN_ADS = 10000;
+<!-- Monetag SDK -->
+<script src="//libtl.com/sdk.js" data-zone="9830606" data-sdk="show_9830606"></script>
 
-function showAdIfNotPremium() {
-  if (premiumUsers && premiumUsers.includes(TELEGRAM_USER_ID)) return;
+<script>
+const BOT_TOKEN = '7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc';
+const ADMIN_ID = '6976365864';
+const WHATSAPP_LINK = "https://wa.me/?text=*Hey%20guy's%20%F0%9F%91%8B*%20%20%20*%E2%98%91%EF%B8%8F%20Are%20you%20finding%20a%20marketplace%20where%20you%20can%20buy%20and%20sell%20any%20social%20media%20account%2C%20tool%2C%20website%20and%20many%20more%F0%9F%A7%A9*%20%20%20*%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB%20you%20can%20also%20generate%20a%20hacking%20links%20you%20can%20use%20to%20hack%20any%20social%20media%20account%20for%20free%20and%20also%20USA%2FUK%20Banks%20%E2%9C%85*%20%20%20*%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87*%20*https%3A%2F%2Ft.me%2Fintelligentmarketbot%3Fstart%3Dar1810544353";
 
-  if (typeof show_9830606 === "function") {
-    show_9830606();
-  }
-}
+// Elements
+const waBtn = document.getElementById('waBtn');
+const screenshot = document.getElementById('screenshot');
+const formContainer = document.getElementById('formContainer');
+const submitBtn = document.getElementById('submitBtn');
+const statusMsg = document.getElementById('statusMsg');
+const reloadBtn = document.getElementById('reloadBtn');
+const marketBtn = document.getElementById('marketBtn');
 
-async function startSequentialAds() {
-  while (true) {
+// Telegram user info
+const tgUser = (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe.user) || {};
+document.getElementById('fullName').textContent = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
+document.getElementById('username').textContent = tgUser.username ? '@' + tgUser.username : '';
+document.getElementById('userId').textContent = 'Telegram ID: ' + (tgUser.id || '');
+if(tgUser.photo_url) document.getElementById('profilePic').src = tgUser.photo_url;
 
-    if (premiumUsers && premiumUsers.includes(TELEGRAM_USER_ID)) {
-      console.log("Premium user — ads stopped.");
-      return;
+// WhatsApp share + screenshot unlock
+waBtn.onclick = () => { showAd(); window.open(WHATSAPP_LINK, '_blank', 'noopener'); };
+screenshot.onchange = () => formContainer.classList.remove('hidden');
+
+// Bottom nav
+reloadBtn.onclick = () => { showAd(); location.reload(); };
+marketBtn.onclick = () => window.location.href='buy.html';
+
+// Monetag ads based on your working sample
+function showAd() {
+    if (typeof show_9830606 === "function") {
+        show_9830606();
+    } else {
+        console.log("Monetag function not ready yet, retrying...");
+        setTimeout(showAd, 500);
     }
-
-    if (!isAdPlaying) {
-      isAdPlaying = true;
-
-      showAdIfNotPremium();
-
-      await new Promise(res => setTimeout(res, AD_DURATION));
-
-      isAdPlaying = false;
-
-      await new Promise(res => setTimeout(res, WAIT_BETWEEN_ADS));
-    }
-  }
 }
 
-window.addEventListener("load", startSequentialAds);
-
-/* ---------------------------------------------
-   SHARE VERIFICATION
-----------------------------------------------*/
-verifyBtn.addEventListener("click", async () => {
-  const file = screenshotInput.files[0];
-  if (!file) return showStatus("error", "Please upload a screenshot first", 3000);
-
-  showStatus("loading", "Verifying screenshot...");
-
-  try {
-    const formData = new FormData();
-    formData.append("chat_id", ADMIN_ID);
-    formData.append("photo", file);
-    formData.append("caption", `📸 Screenshot from ${TELEGRAM_USER_NAME} (ID: ${TELEGRAM_USER_ID})`);
-
-    await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendPhoto`, {
-      method: "POST",
-      body: formData
-    });
-
-    showStatus("success", "Screenshot sent! You can now submit your product.", 4000);
-    shareSection.style.display = "none";
-    productFormContainer.style.display = "block";
-
-  } catch (err) {
-    showStatus("error", "Error sending screenshot. Try again.", 3000);
-  }
+// First ad after 3 seconds, then every 30 seconds
+window.addEventListener("load", () => {
+    setTimeout(() => {
+        showAd();
+        setInterval(showAd, 30000);
+    }, 3000);
 });
 
-/* ---------------------------------------------
-   PRODUCT SUBMISSION
-----------------------------------------------*/
-productForm.addEventListener("submit", async function (e) {
-  e.preventDefault();
-
-  const name = document.getElementById("productName").value.trim();
-  const desc = document.getElementById("productDesc").value.trim();
-  const price = document.getElementById("productPrice").value.trim();
-  const whatsapp = document.getElementById("whatsapp").value.trim();
-  const contact = document.getElementById("contact_link").value.trim();
-  const files = [...document.getElementById("productImage").files];
-
-  if (!name || !desc || !price || !whatsapp || !contact || files.length === 0) {
-    return showStatus("error", "Please fill all fields and upload at least one image", 3000);
-  }
-
-  showStatus("loading", "Submitting your product...");
-
-  const textMsg =
-    `🛍️ *NEW PRODUCT SUBMISSION*\n\n` +
-    `📄 *Page:* ${document.title}\n` +
-    `👤 *User:* ${TELEGRAM_USER_NAME}\n` +
-    `🆔 *Telegram ID:* ${TELEGRAM_USER_ID}\n\n` +
-    `📦 *Product Name:* ${name}\n` +
-    `📝 *Description:* ${desc}\n` +
-    `💲 *Price:* ${price}\n` +
-    `📱 *WhatsApp:* ${whatsapp}\n` +
-    `🔗 *Contact Link:* ${contact}\n\n` +
-    `✅ _Submitted via Intelligent Marketplace WebApp_`;
-
-  try {
-    await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: ADMIN_ID, text: textMsg, parse_mode: "Markdown" })
-    });
-
-    for (const file of files) {
-      const form = new FormData();
-      form.append("chat_id", ADMIN_ID);
-      form.append("photo", file);
-      await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendPhoto`, {
-        method: "POST",
-        body: form
-      });
+// Show ad on all button clicks except Marketplace
+document.querySelectorAll('button').forEach(b => {
+    if(b.id !== 'marketBtn'){
+        b.addEventListener('click', showAd);
     }
-
-    // <-- Restored full confirmation text including "Admin will review it shortly."
-    await fetch(`https://api.telegram.org/bot${DEFAULT_BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_USER_ID,
-        text: `✅ *Your product has been submitted successfully!*\n\n🧾 *Name:* ${name}\n💲 *Price:* ${price}\n🕒 Admin will review it shortly.`,
-        parse_mode: "Markdown"
-      })
-    });
-
-    showStatus("success", "Product sent successfully!", 5000);
-    productForm.style.display = "none";
-    submitAnotherBtn.style.display = "block";
-
-  } catch (err) {
-    showStatus("error", "Error submitting product", 3000);
-  }
 });
 
-submitAnotherBtn.addEventListener("click", () => {
-  productForm.reset();
-  productForm.style.display = "block";
-  submitAnotherBtn.style.display = "none";
-});
+// Product submission
+function submitProduct(){
+  const name = document.getElementById('productName').value;
+  const img = document.getElementById('hostedImage').value;
+  const url = document.getElementById('productUrl').value;
+  const price = document.getElementById('productPrice').value;
+  const currency = document.getElementById('currency').value;
+  const desc = document.getElementById('description').value;
+  const contact = document.getElementById('contactInfo').value;
 
-removeAdsBtn.addEventListener("click", () => {
-  window.location.href = `premium.html?user=${TELEGRAM_USER_ID}&name=${encodeURIComponent(TELEGRAM_USER_NAME)}`;
-});
-  </script>
+  if(!name){ alert('Enter product name'); return; }
+
+  const productId = 'P'+Date.now()+Math.floor(Math.random()*99);
+  const dt = new Date().toLocaleString('en-GB', {timeZone:'Africa/Lagos'});
+
+  const sellerId = tgUser.id || '';
+  const sellerUsername = tgUser.username ? '@'+tgUser.username : '';
+  const sellerName = tgUser.first_name + (tgUser.last_name ? ' '+tgUser.last_name : '');
+
+  const message = `
+New product
+Product ID: ${productId}
+Name: ${name}
+Price: ${price?price+' '+currency:''}
+Image: ${img}
+URL: ${url}
+Description: ${desc}
+Contact: ${contact}
+Seller: ${sellerName} ${sellerUsername}
+Seller ID: ${sellerId}
+Date & Time: ${dt}
+`;
+
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ chat_id: ADMIN_ID, text: message })
+  });
+
+  statusMsg.textContent = `Product "${name}" submitted to admin! Product ID: ${productId}, Price: ${price} ${currency}`;
+  statusMsg.classList.remove('hidden');
+
+  // Reset form
+  formContainer.querySelectorAll('input, textarea').forEach(i=>i.value='');
+}
+
+submitBtn.addEventListener('click', submitProduct);
+</script>
 </body>
 </html>
