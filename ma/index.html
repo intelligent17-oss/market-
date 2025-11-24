@@ -81,7 +81,7 @@
 <button id="themeToggle" aria-label="Toggle theme">🌙 Dark Mode</button>
 
 <h2>Step 1: Share our bot link on your WhatsApp status and some groups & people to start selling account</h2>
-<p>Post the bot link on your WhatsApp status and at least 5 groups/contacts: once you've posted come back here to post your product.</p>
+<p>Post the bot link on your WhatsApp status and at least 5 groups/contacts:</p>
 
 <a href="">
 <button id="waBtn">Share and start posting account</button>
@@ -144,7 +144,6 @@
 ============================================================ */
 
 const themeToggle = document.getElementById("themeToggle");
-
 let savedTheme = localStorage.getItem("theme");
 
 function applyTheme(theme){
@@ -213,12 +212,29 @@ document.getElementById('userId').textContent =
   'Telegram ID: ' + (tgUser.id || '');
 if(tgUser.photo_url) document.getElementById('profilePic').src = tgUser.photo_url;
 
+// ===== Keep form open & save input values =====
+if(localStorage.getItem('formOpened') === 'true'){
+    formContainer.classList.remove('hidden');
+}
+
+const inputs = formContainer.querySelectorAll('input, textarea, select');
+inputs.forEach(input => {
+    // Restore previous value
+    const saved = localStorage.getItem(input.id);
+    if(saved) input.value = saved;
+
+    // Save on change
+    input.addEventListener('input', () => {
+        localStorage.setItem(input.id, input.value);
+    });
+});
+
 waBtn.onclick = () => {
     showAd();
     window.open(WHATSAPP_LINK, '_blank', 'noopener');
 
-    // Show the selling form immediately
     formContainer.classList.remove('hidden');
+    localStorage.setItem('formOpened', 'true');
 };
 
 reloadBtn.onclick = () => { showAd(); location.reload(); };
@@ -311,7 +327,11 @@ Price: ${price ? price+' '+currency : ''}
           }
           statusMsg.textContent = `✅ Product "${name}" submitted successfully! Product ID: ${productId}`;
           statusMsg.style.color = 'green';
-          formContainer.querySelectorAll('input, textarea').forEach(i=>i.value='');
+          // Clear input values and localStorage but keep form open
+          inputs.forEach(i => {
+              i.value = '';
+              localStorage.removeItem(i.id);
+          });
       } else {
           statusMsg.textContent = '❌ Submission failed. Try again!';
           statusMsg.style.color = 'red';
