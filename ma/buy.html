@@ -65,8 +65,25 @@
   #userInfo { margin-bottom:15px; display:flex; align-items:center; gap:10px; }
   #userInfo img { border-radius:50%; width:60px; height:60px; object-fit:cover; }
 
-  /* MESSAGE BOX */
-  #msgBox { display:none; padding:12px; border-radius:8px; margin:10px 0; font-weight:bold; text-align:center; }
+  /* MESSAGE BOX — UPDATED FOR FIXED TOP AND MANUAL CLOSE */
+  #msgBox {
+    display: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    text-align: center;
+    font-size: 16px;
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    min-width: 300px;
+    max-width: 90%;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    word-break: break-word;
+    cursor: pointer;
+  }
 </style>
 </head>
 
@@ -179,15 +196,15 @@ document.getElementById('username').textContent = tgUser.username ? "@" + tgUser
 document.getElementById('userId').textContent = "Telegram ID: " + (tgUser.id || "");
 if(tgUser.photo_url) document.getElementById('profilePic').src = tgUser.photo_url;
 
-// MESSAGE FUNCTION
+// MESSAGE FUNCTION — UPDATED FOR MANUAL CLOSE
 function showMessage(message, type="success") {
   const box = document.getElementById('msgBox');
-  box.style.display = "block";
-  box.style.color = type==="success" ? "#155724" : "#721c24";
-  box.style.background = type==="success" ? "#d4edda" : "#f8d7da";
-  box.style.border = type==="success" ? "1px solid #c3e6cb" : "1px solid #f5c6cb";
+  box.style.color = type==="success" ? "#155724" : type==="pending" ? "#856404" : "#721c24";
+  box.style.background = type==="success" ? "#d4edda" : type==="pending" ? "#fff3cd" : "#f8d7da";
+  box.style.border = type==="success" ? "1px solid #c3e6cb" : type==="pending" ? "1px solid #ffeeba" : "1px solid #f5c6cb";
   box.textContent = message;
-  setTimeout(()=>box.style.display="none", 4000);
+  box.style.display = "block";
+  box.onclick = () => { box.style.display = "none"; };
 }
 
 // COPY FUNCTION
