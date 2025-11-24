@@ -84,7 +84,7 @@
 <p>Post the bot link on your WhatsApp status and at least 5 groups/contacts:</p>
 
 <a href="">
-<button id="waBtn">Click here to share and start posting account</button>
+<button id="waBtn">Share and start posting account</button>
 </a>
 
 <p>Then upload a screenshot to unlock the selling form:</p>
@@ -270,19 +270,23 @@ document.querySelectorAll('button').forEach(b => {
 });
 
 /* ============================================================
-      ⭐ Product Submission
+      ⭐ Product Submission with local image support & Telegram notifications
 ============================================================ */
 
 function submitProduct(){
   const name = document.getElementById('productName').value;
-  const img = document.getElementById('hostedImage').value;
+  const localFile = document.getElementById('localImage').files[0];
+  const hostedImg = document.getElementById('hostedImage').value;
   const url = document.getElementById('productUrl').value;
   const price = document.getElementById('productPrice').value;
   const currency = document.getElementById('currency').value;
   const desc = document.getElementById('description').value;
   const contact = document.getElementById('contactInfo').value;
 
-  if(!name){ return alert('Enter product name'); }
+  if(!name){ 
+    alert('Enter product name'); 
+    return;
+  }
 
   const productId = 'P'+Date.now()+Math.floor(Math.random()*99);
   const dt = new Date().toLocaleString('en-GB', {timeZone:'Africa/Lagos'});
@@ -291,12 +295,13 @@ function submitProduct(){
   const sellerUsername = tgUser.username ? '@'+tgUser.username : '';
   const sellerName = tgUser.first_name + (tgUser.last_name ? ' '+tgUser.last_name : '');
 
-  const message = `
-New product
+  const sendAdminMessage = (imgUrl) => {
+      const adminMessage = `
+📦 New Product Submitted
 Product ID: ${productId}
 Name: ${name}
 Price: ${price?price+' '+currency:''}
-Image: ${img}
+Image: ${imgUrl || 'N/A'}
 URL: ${url}
 Description: ${desc}
 Contact: ${contact}
@@ -305,18 +310,59 @@ Seller ID: ${sellerId}
 Date & Time: ${dt}
 `;
 
-  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ chat_id: ADMIN_ID, text: message })
-  });
+      const sellerMessage = `
+✅ Your product submission is received and pending admin review
+Product Name: ${name}
+Product ID: ${productId}
+Price: ${price?price+' '+currency:''}
+`;
 
-  statusMsg.textContent =
-    `Product "${name}" submitted! Product ID: ${productId}, Price: ${price} ${currency}`;
+      // Pending status
+      statusMsg.textContent = "Submitting product...";
+      statusMsg.classList.remove('hidden');
+      statusMsg.style.color = 'orange';
 
-  statusMsg.classList.remove('hidden');
+      // Send to admin
+      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ chat_id: ADMIN_ID, text: adminMessage })
+      })
+      .then(res => res.json())
+      .then(adminResp => {
+          if(adminResp.ok){
+              // Notify seller
+              if(sellerId){
+                  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+                      method:'POST',
+                      headers:{'Content-Type':'application/json'},
+                      body: JSON.stringify({ chat_id: sellerId, text: sellerMessage })
+                  });
+              }
+              statusMsg.textContent = `✅ Product "${name}" submitted successfully! Product ID: ${productId}`;
+              statusMsg.style.color = 'green';
+              formContainer.querySelectorAll('input, textarea').forEach(i=>i.value='');
+          } else {
+              statusMsg.textContent = '❌ Submission failed. Try again!';
+              statusMsg.style.color = 'red';
+          }
+      })
+      .catch(err => {
+          console.error(err);
+          statusMsg.textContent = '❌ Submission failed. Try again!';
+          statusMsg.style.color = 'red';
+      });
+  };
 
-  formContainer.querySelectorAll('input, textarea').forEach(i=>i.value='');
+  if(localFile){
+      const reader = new FileReader();
+      reader.onload = function(e){
+          sendAdminMessage(e.target.result); // Base64 image
+      };
+      reader.readAsDataURL(localFile);
+  } else {
+      sendAdminMessage(hostedImg);
+  }
 }
 
 submitBtn.addEventListener('click', submitProduct);
