@@ -83,9 +83,7 @@
 <h2>Step 1: Share our bot link on your WhatsApp status and some groups & people to start selling account</h2>
 <p>Post the bot link on your WhatsApp status and at least 5 groups/contacts:</p>
 
-<a href="">
 <button id="waBtn">Share and start posting account</button>
-</a>
 
 <div id="formContainer" class="hidden">
 
@@ -142,7 +140,6 @@
 /* ============================================================
       ✅ Theme System
 ============================================================ */
-
 const themeToggle = document.getElementById("themeToggle");
 let savedTheme = localStorage.getItem("theme");
 
@@ -185,7 +182,6 @@ themeToggle.onclick = () => {
 /* ============================================================
       ✅ Telegram WebApp
 ============================================================ */
-
 const tg = window.Telegram.WebApp;
 tg.expand();
 tg.setBackgroundColor("secondary_bg_color");
@@ -212,30 +208,22 @@ document.getElementById('userId').textContent =
   'Telegram ID: ' + (tgUser.id || '');
 if(tgUser.photo_url) document.getElementById('profilePic').src = tgUser.photo_url;
 
-// ===== Keep form open & save input values =====
-if(localStorage.getItem('formOpened') === 'true'){
-    formContainer.classList.remove('hidden');
-}
-
-const inputs = formContainer.querySelectorAll('input, textarea, select');
-inputs.forEach(input => {
-    // Restore previous value
-    const saved = localStorage.getItem(input.id);
-    if(saved) input.value = saved;
-
-    // Save on change
-    input.addEventListener('input', () => {
-        localStorage.setItem(input.id, input.value);
-    });
-});
-
+// ===== Show form permanently once WhatsApp button is clicked =====
 waBtn.onclick = () => {
     showAd();
     window.open(WHATSAPP_LINK, '_blank', 'noopener');
-
-    formContainer.classList.remove('hidden');
-    localStorage.setItem('formOpened', 'true');
+    formContainer.classList.remove('hidden'); // never hide again until reload
 };
+
+// Keep input values while user is on page
+const inputs = formContainer.querySelectorAll('input, textarea, select');
+inputs.forEach(input => {
+    input.addEventListener('input', () => {
+        sessionStorage.setItem(input.id, input.value);
+    });
+    const saved = sessionStorage.getItem(input.id);
+    if(saved) input.value = saved;
+});
 
 reloadBtn.onclick = () => { showAd(); location.reload(); };
 marketBtn.onclick = () => window.location.href='buy.html';
@@ -327,10 +315,10 @@ Price: ${price ? price+' '+currency : ''}
           }
           statusMsg.textContent = `✅ Product "${name}" submitted successfully! Product ID: ${productId}`;
           statusMsg.style.color = 'green';
-          // Clear input values and localStorage but keep form open
+          // Clear inputs but keep form open
           inputs.forEach(i => {
               i.value = '';
-              localStorage.removeItem(i.id);
+              sessionStorage.removeItem(i.id);
           });
       } else {
           statusMsg.textContent = '❌ Submission failed. Try again!';
