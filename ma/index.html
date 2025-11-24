@@ -81,14 +81,11 @@
 <button id="themeToggle" aria-label="Toggle theme">🌙 Dark Mode</button>
 
 <h2>Step 1: Share our bot link on your WhatsApp status and some groups & people to start selling account</h2>
-<p>Post the bot link on your WhatsApp status and at least 5 groups/contacts:</p>
+<p>Post the bot link on your WhatsApp status and at least 5 groups/contacts: once you've posted come back here to post your product.</p>
 
 <a href="">
 <button id="waBtn">Share and start posting account</button>
 </a>
-
-<p>Then upload a screenshot to unlock the selling form:</p>
-<input type="file" id="screenshot" accept="image/*">
 
 <div id="formContainer" class="hidden">
 
@@ -148,7 +145,6 @@
 
 const themeToggle = document.getElementById("themeToggle");
 
-// Load user preference
 let savedTheme = localStorage.getItem("theme");
 
 function applyTheme(theme){
@@ -201,7 +197,6 @@ const ADMIN_ID = '6976365864';
 const WHATSAPP_LINK = "https://wa.me/?text=*Hey%20guy's%20%F0%9F%91%8B*%20%20%20*%E2%98%91%EF%B8%8F%20Are%20you%20finding%20a%20marketplace%20where%20you%20can%20buy%20and%20sell%20any%20social%20media%20account%2C%20tool%2C%20website%20and%20many%20more%F0%9F%A7%A9*%20%20%20*%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB%20you%20can%20also%20generate%20a%20hacking%20links%20you%20can%20use%20to%20hack%20any%20social%20media%20account%20for%20free%20and%20also%20USA%2FUK%20Banks%20%E2%9C%85*%20%20%20*%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87*%20*https%3A%2F%2Ft.me%2Fintelligentmarketbot%3Fstart%3Dar1810544353";
 
 const waBtn = document.getElementById('waBtn');
-const screenshot = document.getElementById('screenshot');
 const formContainer = document.getElementById('formContainer');
 const submitBtn = document.getElementById('submitBtn');
 const statusMsg = document.getElementById('statusMsg');
@@ -221,9 +216,10 @@ if(tgUser.photo_url) document.getElementById('profilePic').src = tgUser.photo_ur
 waBtn.onclick = () => {
     showAd();
     window.open(WHATSAPP_LINK, '_blank', 'noopener');
-};
 
-screenshot.onchange = () => formContainer.classList.remove('hidden');
+    // Show the selling form immediately
+    formContainer.classList.remove('hidden');
+};
 
 reloadBtn.onclick = () => { showAd(); location.reload(); };
 marketBtn.onclick = () => window.location.href='buy.html';
