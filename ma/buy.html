@@ -483,12 +483,41 @@ myProductBtn.onclick = () => {
       </div>
     `;
     container.appendChild(div);
+
     div.querySelector('.deleteBtn').onclick = () => {
-      showMessage(`Delete request sent to admin for product: ${prod.name}`,"success");
+      // Confirmation
+      if(confirm(`Are you sure you want to request deletion of "${prod.name}"?`)){
+        const sellerId = prod.sellerId;
+        const productName = prod.name;
+        const productId = prod.id;
+        const productPrice = prod.price + " " + prod.currency;
+        const productURL = prod.url;
+        const sellerContact = prod.sellerContact || "Not provided";
+
+        // Notify admin
+        const adminMessage = `
+<b>Delete Request</b>
+Product: ${productName}
+Product ID: ${productId}
+Price: ${productPrice}
+Seller ID: ${sellerId}
+Seller Contact: ${sellerContact}
+Product URL: ${productURL}
+`;
+        sendTelegramMessage(ADMIN_ID, adminMessage);
+
+        // Notify seller
+        const sellerMessage = `
+Your product <b>${productName}</b> has a deletion request sent to admin.
+Admin will review and take action.
+`;
+        sendTelegramMessage(sellerId, sellerMessage);
+
+        showMessage(`Delete request for "${prod.name}" has been sent to admin.`,"success");
+      }
     };
   });
 };
 </script>
-
 </body>
 </html>
