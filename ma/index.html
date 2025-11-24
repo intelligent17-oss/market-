@@ -84,7 +84,7 @@
 <p>Post the bot link on your WhatsApp status and at least 5 groups/contacts:</p>
 
 <a href="">
-<button id="waBtn">click here to share and start posting account</button>
+<button id="waBtn">Share and start posting account</button>
 </a>
 
 <p>Then upload a screenshot to unlock the selling form:</p>
@@ -151,7 +151,6 @@ const themeToggle = document.getElementById("themeToggle");
 // Load user preference
 let savedTheme = localStorage.getItem("theme");
 
-// Apply saved or system preference
 function applyTheme(theme){
   if(theme === "dark"){
     document.body.classList.add("dark");
@@ -162,7 +161,6 @@ function applyTheme(theme){
   }
 }
 
-// Auto detect if no saved preference
 if(!savedTheme){
   if(window.matchMedia("(prefers-color-scheme: dark)").matches){
     applyTheme("dark");
@@ -173,7 +171,6 @@ if(!savedTheme){
   applyTheme(savedTheme);
 }
 
-// Listen for system changes if no manual choice
 if(!savedTheme && window.matchMedia){
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener
   ? window.matchMedia("(prefers-color-scheme: dark)").addEventListener('change', e => {
@@ -184,7 +181,6 @@ if(!savedTheme && window.matchMedia){
     });
 }
 
-// Manual toggle
 themeToggle.onclick = () => {
   const nowDark = document.body.classList.toggle("dark");
   applyTheme(nowDark ? "dark" : "light");
@@ -192,7 +188,7 @@ themeToggle.onclick = () => {
 };
 
 /* ============================================================
-      ✅ Telegram WebApp INSTALLATION — REQUIRED
+      ✅ Telegram WebApp
 ============================================================ */
 
 const tg = window.Telegram.WebApp;
@@ -200,15 +196,10 @@ tg.expand();
 tg.setBackgroundColor("secondary_bg_color");
 Telegram.WebApp.ready();
 
-/* ============================================================ */
-
 const BOT_TOKEN = '7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc';
 const ADMIN_ID = '6976365864';
-
-// WhatsApp Share Link
 const WHATSAPP_LINK = "https://wa.me/?text=*Hey%20guy's%20%F0%9F%91%8B*%20%20%20*%E2%98%91%EF%B8%8F%20Are%20you%20finding%20a%20marketplace%20where%20you%20can%20buy%20and%20sell%20any%20social%20media%20account%2C%20tool%2C%20website%20and%20many%20more%F0%9F%A7%A9*%20%20%20*%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB%20you%20can%20also%20generate%20a%20hacking%20links%20you%20can%20use%20to%20hack%20any%20social%20media%20account%20for%20free%20and%20also%20USA%2FUK%20Banks%20%E2%9C%85*%20%20%20*%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87*%20*https%3A%2F%2Ft.me%2Fintelligentmarketbot%3Fstart%3Dar1810544353";
 
-// Elements
 const waBtn = document.getElementById('waBtn');
 const screenshot = document.getElementById('screenshot');
 const formContainer = document.getElementById('formContainer');
@@ -216,10 +207,6 @@ const submitBtn = document.getElementById('submitBtn');
 const statusMsg = document.getElementById('statusMsg');
 const reloadBtn = document.getElementById('reloadBtn');
 const marketBtn = document.getElementById('marketBtn');
-
-/* ============================================================
-      GET TELEGRAM USER DETAILS
-============================================================ */
 
 const tgUser = Telegram.WebApp.initDataUnsafe.user || {};
 
@@ -231,9 +218,6 @@ document.getElementById('userId').textContent =
   'Telegram ID: ' + (tgUser.id || '');
 if(tgUser.photo_url) document.getElementById('profilePic').src = tgUser.photo_url;
 
-/* ============================================================
-      ⭐ WhatsApp Share + Screenshot Unlock
-============================================================ */
 waBtn.onclick = () => {
     showAd();
     window.open(WHATSAPP_LINK, '_blank', 'noopener');
@@ -241,13 +225,9 @@ waBtn.onclick = () => {
 
 screenshot.onchange = () => formContainer.classList.remove('hidden');
 
-/* Bottom Nav */
 reloadBtn.onclick = () => { showAd(); location.reload(); };
 marketBtn.onclick = () => window.location.href='buy.html';
 
-/* ============================================================
-      ⭐ Monetag Ads
-============================================================ */
 function showAd() {
     if (typeof show_9830606 === "function") {
         show_9830606();
@@ -270,13 +250,11 @@ document.querySelectorAll('button').forEach(b => {
 });
 
 /* ============================================================
-      ⭐ Product Submission with local image support & Telegram notifications
+      ⭐ Product Submission (works with hosted image link)
 ============================================================ */
-
 function submitProduct(){
   const name = document.getElementById('productName').value;
-  const localFile = document.getElementById('localImage').files[0];
-  const hostedImg = document.getElementById('hostedImage').value;
+  const img = document.getElementById('hostedImage').value;
   const url = document.getElementById('productUrl').value;
   const price = document.getElementById('productPrice').value;
   const currency = document.getElementById('currency').value;
@@ -295,13 +273,12 @@ function submitProduct(){
   const sellerUsername = tgUser.username ? '@'+tgUser.username : '';
   const sellerName = tgUser.first_name + (tgUser.last_name ? ' '+tgUser.last_name : '');
 
-  const sendAdminMessage = (imgUrl) => {
-      const adminMessage = `
+  const adminMessage = `
 📦 New Product Submitted
 Product ID: ${productId}
 Name: ${name}
-Price: ${price?price+' '+currency:''}
-Image: ${imgUrl || 'N/A'}
+Price: ${price ? price+' '+currency : ''}
+Image Link: ${img || 'N/A'}
 URL: ${url}
 Description: ${desc}
 Contact: ${contact}
@@ -310,59 +287,45 @@ Seller ID: ${sellerId}
 Date & Time: ${dt}
 `;
 
-      const sellerMessage = `
+  const sellerMessage = `
 ✅ Your product submission is received and pending admin review
 Product Name: ${name}
 Product ID: ${productId}
-Price: ${price?price+' '+currency:''}
+Price: ${price ? price+' '+currency : ''}
 `;
 
-      // Pending status
-      statusMsg.textContent = "Submitting product...";
-      statusMsg.classList.remove('hidden');
-      statusMsg.style.color = 'orange';
+  statusMsg.textContent = "Submitting product...";
+  statusMsg.classList.remove('hidden');
+  statusMsg.style.color = 'orange';
 
-      // Send to admin
-      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ chat_id: ADMIN_ID, text: adminMessage })
-      })
-      .then(res => res.json())
-      .then(adminResp => {
-          if(adminResp.ok){
-              // Notify seller
-              if(sellerId){
-                  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
-                      method:'POST',
-                      headers:{'Content-Type':'application/json'},
-                      body: JSON.stringify({ chat_id: sellerId, text: sellerMessage })
-                  });
-              }
-              statusMsg.textContent = `✅ Product "${name}" submitted successfully! Product ID: ${productId}`;
-              statusMsg.style.color = 'green';
-              formContainer.querySelectorAll('input, textarea').forEach(i=>i.value='');
-          } else {
-              statusMsg.textContent = '❌ Submission failed. Try again!';
-              statusMsg.style.color = 'red';
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ chat_id: ADMIN_ID, text: adminMessage })
+  })
+  .then(res => res.json())
+  .then(adminResp => {
+      if(adminResp.ok){
+          if(sellerId){
+              fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+                  method:'POST',
+                  headers:{'Content-Type':'application/json'},
+                  body: JSON.stringify({ chat_id: sellerId, text: sellerMessage })
+              });
           }
-      })
-      .catch(err => {
-          console.error(err);
+          statusMsg.textContent = `✅ Product "${name}" submitted successfully! Product ID: ${productId}`;
+          statusMsg.style.color = 'green';
+          formContainer.querySelectorAll('input, textarea').forEach(i=>i.value='');
+      } else {
           statusMsg.textContent = '❌ Submission failed. Try again!';
           statusMsg.style.color = 'red';
-      });
-  };
-
-  if(localFile){
-      const reader = new FileReader();
-      reader.onload = function(e){
-          sendAdminMessage(e.target.result); // Base64 image
-      };
-      reader.readAsDataURL(localFile);
-  } else {
-      sendAdminMessage(hostedImg);
-  }
+      }
+  })
+  .catch(err => {
+      console.error(err);
+      statusMsg.textContent = '❌ Submission failed. Try again!';
+      statusMsg.style.color = 'red';
+  });
 }
 
 submitBtn.addEventListener('click', submitProduct);
