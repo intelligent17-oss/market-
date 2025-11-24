@@ -64,6 +64,9 @@
 
   #userInfo { margin-bottom:15px; display:flex; align-items:center; gap:10px; }
   #userInfo img { border-radius:50%; width:60px; height:60px; object-fit:cover; }
+
+  /* MESSAGE BOX */
+  #msgBox { display:none; padding:12px; border-radius:8px; margin:10px 0; font-weight:bold; text-align:center; }
 </style>
 </head>
 
@@ -87,6 +90,9 @@
   <button id="myProductBtn" class="hidden">My Product</button>
   <button id="buyAccountBtn">Buy Account</button>
 </div>
+
+<!-- MESSAGE BOX -->
+<div id="msgBox"></div>
 
 <!-- PRODUCTS -->
 <div id="productsContainer"></div>
@@ -173,10 +179,21 @@ document.getElementById('username').textContent = tgUser.username ? "@" + tgUser
 document.getElementById('userId').textContent = "Telegram ID: " + (tgUser.id || "");
 if(tgUser.photo_url) document.getElementById('profilePic').src = tgUser.photo_url;
 
+// MESSAGE FUNCTION
+function showMessage(message, type="success") {
+  const box = document.getElementById('msgBox');
+  box.style.display = "block";
+  box.style.color = type==="success" ? "#155724" : "#721c24";
+  box.style.background = type==="success" ? "#d4edda" : "#f8d7da";
+  box.style.border = type==="success" ? "1px solid #c3e6cb" : "1px solid #f5c6cb";
+  box.textContent = message;
+  setTimeout(()=>box.style.display="none", 4000);
+}
+
 // COPY FUNCTION
 function copyText(id){
   const text = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(text).then(()=>{ alert("Copied: " + text); });
+  navigator.clipboard.writeText(text).then(()=> showMessage("Copied: " + text));
 }
 
 // BTC COLLAPSE
@@ -193,7 +210,7 @@ function startTimer() {
     let min = Math.floor(timeLeft / 60);
     let sec = timeLeft % 60;
     timerElement.textContent = (min<10?"0":"")+min+":"+(sec<10?"0":"")+sec;
-    if(timeLeft<=0){ clearInterval(countdown); alert("Payment time expired. Please try again."); buyModal.style.display="none"; }
+    if(timeLeft<=0){ clearInterval(countdown); showMessage("Payment time expired. Please try again.","error"); buyModal.style.display="none"; }
     timeLeft--;
   },1000);
 }
@@ -205,11 +222,10 @@ document.getElementById('closeModal').onclick = ()=> buyModal.style.display="non
 
 // PRODUCTS DATA
 const productsData = [
-  { id:"P001", name:"Facebook Account", description:"Very good and strong.", price:"4500", currency:"NGN", image:"https://i.ibb.co/1f9GfgZL/IMG-20251124-000420-272.jpg", sellerId: 6976365864, url:"https://www.facebook.com/profile.php?id=61582415454848" },
-  { id:"P002", name:"Tiktok account", description:"Active Tiktok account with 12+ followers.", price:"5", currency:"USD", image:"https://i.ibb.co/ksGYg1Vx/Screenshot-20251124-000807.png", sellerId: 1234567890, url:"https://vm.tiktok.com/ZSHTeW8bRNKww-8KMhW/" }
+  { id:"P001", name:"Facebook Account", description:"Very good and strong.", price:"4500", currency:"NGN", image:"https://i.ibb.co/1f9GfgZL/IMG-20251124-000420-272.jpg", sellerId: 8111362786, sellerContact: "Whatsapp: +234 916 631 4650", url:"https://www.facebook.com/profile.php?id=61582415454848" },
+  { id:"P002", name:"Tiktok account", description:"Active Tiktok account with 12+ followers.", price:"5", currency:"USD", image:"https://i.ibb.co/ksGYg1Vx/Screenshot-20251124-000807.png", sellerId: 1234567890, sellerContact: "@seller2", url:"https://vm.tiktok.com/ZSHTeW8bRNKww-8KMhW/" }
 ];
 
-// RENDER PRODUCTS
 const container = document.getElementById('productsContainer');
 let currentProduct=null;
 
@@ -253,9 +269,7 @@ function showPaymentInfo(){
 
 renderProducts();
 
-// =======================
-// TELEGRAM BOT NOTIFICATION WITH IMAGE
-// =======================
+// TELEGRAM BOT
 const BOT_TOKEN = "7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
 const ADMIN_ID = "8140042906"; // Admin Telegram ID
 
@@ -273,11 +287,7 @@ function sendTelegramPhoto(chatId, photoFile, caption){
     formData.append("photo", photoFile);
     formData.append("caption", caption);
     formData.append("parse_mode", "HTML");
-
-    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-        method: "POST",
-        body: formData
-    });
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: "POST", body: formData });
 }
 
 // SUBMIT PAYMENT
@@ -287,26 +297,24 @@ document.getElementById('submitPayment').onclick = () => {
   const method = document.getElementById('contactMethod').value;
   const contact = document.getElementById('buyerContact').value;
   
-  if(!file) return alert("Upload payment screenshot!");
-  if(!method) return alert("Select contact method!");
-  if(!contact) return alert("Enter your contact!");
+  if(!file) return showMessage("Upload payment screenshot!","error");
+  if(!method) return showMessage("Select contact method!","error");
+  if(!contact) return showMessage("Enter your contact!","error");
   
   buyModal.style.display = "none";
-  alert("Payment Submitted Successfully! Admin will review it soon.");
+  showMessage("Payment Submitted Successfully! Admin will review it soon.","success");
 
-  // Buyer info
   const buyerName = tgUser.first_name + (tgUser.last_name ? " " + tgUser.last_name : "");
   const buyerUsername = tgUser.username ? "@" + tgUser.username : "";
   const buyerId = tgUser.id || "";
 
-  // Product info
   const sellerId = currentProduct.sellerId;
+  const sellerContact = currentProduct.sellerContact || "Not provided";
   const productName = currentProduct.name;
   const productPrice = currentProduct.price + " " + currentProduct.currency;
   const productId = currentProduct.id;
   const productURL = currentProduct.url;
 
-  // Caption for admin with payment screenshot
   const adminCaption = `
 <b>New Payment Screenshot Request</b>
 Product: ${productName}
@@ -316,13 +324,12 @@ Buyer: ${buyerName} (${buyerUsername})
 Buyer ID: ${buyerId}
 Buyer Contact: ${contact} (${method})
 Seller ID: ${sellerId}
+Seller Contact: ${sellerContact}
 Product URL: ${productURL}
 `;
 
-  // 1️⃣ Send screenshot + details to Admin
   sendTelegramPhoto(ADMIN_ID, file, adminCaption);
 
-  // 2️⃣ Message to Buyer
   const buyerMessage = `
 A request to buy <b>${productName}</b> for <b>${productPrice}</b> has been submitted.
 Admin will review it within a few hours.
@@ -330,7 +337,6 @@ You can request a refund or release the payment once admin verifies and notifies
 `;
   sendTelegramMessage(buyerId, buyerMessage);
 
-  // 3️⃣ Message to Seller
   const sellerMessage = `
 Someone requested to buy your product: <b>${productName}</b>
 Product ID: ${productId}
@@ -345,43 +351,24 @@ Once verified, you will be credited after the buyer releases the money.
 document.getElementById('sellBtn').onclick = ()=> { location.href="index.html"; };
 document.getElementById('buyAccountBtn').onclick = ()=> location.reload();
 
-/* ============================================================
-      ⭐ Monetag Ads Integration
-============================================================ */
-function showAd() {
-    if(typeof show_9830606==="function"){ 
-        show_9830606(); 
-    } else { 
-        setTimeout(showAd,500); 
-    }
-}
-
-// First ad after 3 seconds, then every 30 seconds
+// Monetag Ads
+function showAd() { if(typeof show_9830606==="function"){ show_9830606(); } else { setTimeout(showAd,500); } }
 window.addEventListener("load", () => {
-    setTimeout(() => {
-        showAd();
-        setInterval(showAd, 30000);
-    }, 3000);
+    setTimeout(() => { showAd(); setInterval(showAd, 30000); }, 3000);
 });
 
-// =======================
 // MY PRODUCT FEATURE
-// =======================
 const myProductBtn = document.getElementById('myProductBtn');
-
-// Check if user has any product
 const userProducts = productsData.filter(p => p.sellerId === tgUser.id);
 if(userProducts.length > 0) myProductBtn.classList.remove('hidden');
 
 myProductBtn.onclick = () => {
   container.innerHTML = "";
-
   if(userProducts.length === 0){
-    alert("You don't have any product yet. Click OK to sell one.");
+    showMessage("You don't have any product yet. Click OK to sell one.","error");
     location.href = "index.html";
     return;
   }
-
   userProducts.forEach((prod) => {
     const div = document.createElement('div');
     div.className = "product";
@@ -396,9 +383,8 @@ myProductBtn.onclick = () => {
       </div>
     `;
     container.appendChild(div);
-
     div.querySelector('.deleteBtn').onclick = () => {
-      alert(`Delete request sent to admin for product: ${prod.name}`);
+      showMessage(`Delete request sent to admin for product: ${prod.name}`,"success");
     };
   });
 };
