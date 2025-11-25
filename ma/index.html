@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sell Product — Intelligent Marketplace</title>
 
-<!-- ✅ Telegram WebApp SDK -->
+<!-- Telegram SDK -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
@@ -35,6 +35,7 @@
   }
 
   h2,h3 { margin-bottom:10px; }
+
   input, textarea, select, button {
     width:100%; padding:10px; margin:6px 0;
     background: var(--card-bg);
@@ -46,21 +47,29 @@
   button {
     background: var(--button-bg);
     color: var(--button-text);
-    border:none; cursor:pointer;
+    border:none;
+    cursor:pointer;
   }
 
   button:disabled { background:#555; cursor:not-allowed; }
+
   .hidden { display:none; }
+
   .nav { display:flex; gap:10px; margin-top:20px; }
   .nav button { flex:1; }
+
   a { color:blue; }
-  #userInfo { margin-bottom:15px; }
+
   #userInfo img {
-    border-radius:50%; width:60px; height:60px; object-fit:cover;
-    display:block; margin-bottom:5px;
+    border-radius:50%;
+    width:60px;
+    height:60px;
+    object-fit:cover;
+    display:block;
+    margin-bottom:5px;
   }
 
-  /* Toggle button */
+  /* Theme Toggle Btn */
   #themeToggle {
     position: fixed;
     top: 5px;
@@ -73,69 +82,76 @@
     cursor: pointer;
     z-index: 999;
   }
+
+  /* WhatsApp Repost button */
   #waBtn {
-  width: 100%;
-  padding: 15px !important;
-  font-size: 20px !important;
-  font-weight: bold !important;
-  background: #045405 !important;
-  color: #fff !important;
-  border-radius: 10px !important;
-  margin-top: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
+    width: 100%;
+    padding: 15px !important;
+    font-size: 20px !important;
+    font-weight: bold !important;
+    background: #045405 !important;
+    color: #fff !important;
+    border-radius: 10px !important;
+    margin-top: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
 </style>
 </head>
 <body>
 
 <!-- Theme Toggle -->
-<button id="themeToggle" aria-label="Toggle theme">🌙 Dark Mode</button>
+<button id="themeToggle">🌙 Dark Mode</button>
 
-<h2>Step 1: share and repost our bot link on your WhatsApp status and some groups & people to start selling account</h2>
-<p>Repost the bot link on your WhatsApp status and at least 5 groups/contacts: repost on whatsapp and come back again to sell account</p>
+<h2>Step 1: Share our bot link on WhatsApp to start selling</h2>
+<p>Repost the bot link on your WhatsApp status and at least 5 groups/people.</p>
 
 <button id="waBtn">Repost on WhatsApp</button>
-      <div style="background:#fff4ce; padding:10px; margin-top:5px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold;">
-        ⚠️ We show multiples of ads, in this webapp please stay patient for each ads, turning on ads blocker, might block some of our button from working expecialy selling of product.
-      </div>
+
+<div style="background:#fff4ce; padding:10px; margin-top:5px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold;">
+⚠️ We show multiple ads in this webapp. Please be patient. Blocking ads may break some buttons.
+</div>
+
+<!-- FORM -->
 <div id="formContainer" class="hidden">
 
-  <!-- Telegram user info -->
   <div id="userInfo">
     <h3>Logged in as:</h3>
-    <img id="profilePic" src="https://via.placeholder.com/60" alt="Profile">
+    <img id="profilePic" src="https://via.placeholder.com/60">
     <p id="fullName"></p>
     <p id="username"></p>
     <p id="userId"></p>
   </div>
 
   <h2>Step 2: Sell your product</h2>
-  <label>Product Name</label>
-  <input required="text"  type="text" id="productName">
 
-  <label>Upload local product image (preview only)</label>
-  <input required="text"  type="file" id="localImage" accept="image/*">
-          <div style="background:#fff4ce; padding:10px; margin-top:5px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold;">
-        ⚠️ Please! make sure you visit "<a href="https://imgbb.com/" target="_blank">imgbb website</a>" and host your image or else the image will not display when it was uploaded
-      </div>
-        <label>Host image (paste URL after hosting)</label>
-  <p>Need hosting? <a href="https://imgbb.com/" target="_blank">Use imgbb</a></p><input required="text"  type="url" id="hostedImage" placeholder="https://i.imgur.com/...">
+  <label>Product Name</label>
+  <input type="text" id="productName">
+
+  <label>Upload Local Image (preview only)</label>
+  <input type="file" id="localImage" accept="image/*">
+
+  <div style="background:#fff4ce; padding:10px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold;">
+  ⚠️ Host your image on <a href="https://imgbb.com/" target="_blank">imgbb</a> or it won't display.
+  </div>
+
+  <label>Hosted Image URL</label>
+  <input type="url" id="hostedImage" placeholder="https://i.imgur.com/...">
 
   <label>Product URL</label>
-  <input required="text"  type="url" id="productUrl" placeholder="https://...">
+  <input type="url" id="productUrl">
 
   <label>Price</label>
-  <input required="text"  type="number" id="productPrice" placeholder="5000">
+  <input type="number" id="productPrice">
   <select id="currency">
     <option value="NGN">NGN</option>
-    <option value="USD">$ USD</option>
+    <option value="USD">USD</option>
   </select>
 
   <label>Description</label>
   <textarea id="description"></textarea>
 
-  <label>Contact info (WhatsApp / Telegram / Other)</label>
-  <input required="text"  type="text" id="contactInfo" placeholder="Whatsapp: +234xxxxxx">
+  <label>Contact Info</label>
+  <input type="text" id="contactInfo" placeholder="Whatsapp: +234xxxxxxx">
 
   <button id="submitBtn">Submit Product</button>
 
@@ -147,18 +163,16 @@
   <button id="marketBtn">Marketplace</button>
 </div>
 
-<!-- Monetag SDK -->
+<!-- ⭐ Monetag SDK (ads) -->
 <script src="//libtl.com/sdk.js" data-zone="9830606" data-sdk="show_9830606"></script>
 
 <script>
-/* ============================================================
-      ✅ Theme System
-============================================================ */
+/* THEME SYSTEM */
 const themeToggle = document.getElementById("themeToggle");
 let savedTheme = localStorage.getItem("theme");
 
-function applyTheme(theme){
-  if(theme === "dark"){
+function applyTheme(t){
+  if(t === "dark"){
     document.body.classList.add("dark");
     themeToggle.textContent = "☀ Light Mode";
   } else {
@@ -167,186 +181,129 @@ function applyTheme(theme){
   }
 }
 
-if(!savedTheme){
-  if(window.matchMedia("(prefers-color-scheme: dark)").matches){
-    applyTheme("dark");
-  } else {
-    applyTheme("light");
-  }
-} else {
-  applyTheme(savedTheme);
-}
-
-if(!savedTheme && window.matchMedia){
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener
-  ? window.matchMedia("(prefers-color-scheme: dark)").addEventListener('change', e => {
-      applyTheme(e.matches ? "dark" : "light");
-    })
-  : window.matchMedia("(prefers-color-scheme: dark)").addListener(e => {
-      applyTheme(e.matches ? "dark" : "light");
-    });
-}
+applyTheme(savedTheme || "light");
 
 themeToggle.onclick = () => {
-  const nowDark = document.body.classList.toggle("dark");
-  applyTheme(nowDark ? "dark" : "light");
-  try{ localStorage.setItem("theme", nowDark ? "dark" : "light"); } catch(e){}
+  const isDark = document.body.classList.toggle("dark");
+  applyTheme(isDark ? "dark" : "light");
+  localStorage.setItem("theme", isDark ? "dark" : "light");
 };
 
-/* ============================================================
-      ✅ Telegram WebApp
-============================================================ */
+/* TELEGRAM WEBAPP */
 const tg = window.Telegram.WebApp;
 tg.expand();
-tg.setBackgroundColor("secondary_bg_color");
 Telegram.WebApp.ready();
 
-const BOT_TOKEN = '7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc';
-const ADMIN_ID = '6976365864';
-const WHATSAPP_LINK = "https://wa.me/?text=*Hey%20guy's%20%F0%9F%91%8B*%20%20%20*%E2%98%91%EF%B8%8F%20Are%20you%20finding%20a%20marketplace%20where%20you%20can%20buy%20and%20sell%20any%20social%20media%20account%2C%20tool%2C%20website%20and%20many%20more%F0%9F%A7%A9*%20%20%20*%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB%20you%20can%20also%20generate%20a%20hacking%20links%20you%20can%20use%20to%20hack%20any%20social%20media%20account%20for%20free%20and%20also%20USA%2FUK%20Banks%20%E2%9C%85*%20%20%20*%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87*%20*https%3A%2F%2Ft.me%2Fintelligentmarketbot%3Fstart%3Dar1810544353";
+const BOT_TOKEN = "7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
+const ADMIN_ID = "6976365864";
 
-const waBtn = document.getElementById('waBtn');
-const formContainer = document.getElementById('formContainer');
-const submitBtn = document.getElementById('submitBtn');
-const statusMsg = document.getElementById('statusMsg');
-const reloadBtn = document.getElementById('reloadBtn');
-const marketBtn = document.getElementById('marketBtn');
+const WHATSAPP_LINK =
+"https://wa.me/?text=Check%20out%20this%20marketplace%20to%20buy%20and%20sell%20social%20media%20accounts!%20https://t.me/intelligentmarketbot";
+
+const waBtn = document.getElementById("waBtn");
+const formContainer = document.getElementById("formContainer");
+const submitBtn = document.getElementById("submitBtn");
+const statusMsg = document.getElementById("statusMsg");
 
 const tgUser = Telegram.WebApp.initDataUnsafe.user || {};
 
-document.getElementById('fullName').textContent =
-  (tgUser.first_name || "") + (tgUser.last_name ? " " + tgUser.last_name : "");
-document.getElementById('username').textContent =
-  tgUser.username ? '@' + tgUser.username : '';
-document.getElementById('userId').textContent =
-  'Telegram ID: ' + (tgUser.id || '');
-if(tgUser.photo_url) document.getElementById('profilePic').src = tgUser.photo_url;
+document.getElementById("fullName").textContent = tgUser.first_name + " " + (tgUser.last_name || "");
+document.getElementById("username").textContent = tgUser.username ? "@" + tgUser.username : "";
+document.getElementById("userId").textContent = "Telegram ID: " + tgUser.id;
+if(tgUser.photo_url) document.getElementById("profilePic").src = tgUser.photo_url;
 
-// ===== Show form permanently once WhatsApp button is clicked =====
+/* SHOW FORM AFTER WHATSAPP */
 waBtn.onclick = () => {
-    showAd();
-    window.open(WHATSAPP_LINK, '_blank', 'noopener');
-    formContainer.classList.remove('hidden'); // never hide again until reload
+  showAd();
+  window.open(WHATSAPP_LINK, "_blank", "noopener");
+  formContainer.classList.remove("hidden");
 };
 
-// Keep input values while user is on page
-const inputs = formContainer.querySelectorAll('input, textarea, select');
-inputs.forEach(input => {
-    input.addEventListener('input', () => {
-        sessionStorage.setItem(input.id, input.value);
-    });
-    const saved = sessionStorage.getItem(input.id);
-    if(saved) input.value = saved;
+/* SAVE INPUTS */
+document.querySelectorAll("#formContainer input, textarea, select").forEach(i => {
+  i.addEventListener("input", () => sessionStorage.setItem(i.id, i.value));
+  const saved = sessionStorage.getItem(i.id);
+  if(saved) i.value = saved;
 });
 
-reloadBtn.onclick = () => { showAd(); location.reload(); };
-marketBtn.onclick = () => window.location.href='buy.html';
-
-function showAd() {
-    if (typeof show_9830606 === "function") {
-        show_9830606();
-    } else {
-        setTimeout(showAd, 500);
-    }
+/* SHOW ADS */
+function showAd(){
+  if(typeof show_9830606 === "function") show_9830606();
+  else setTimeout(showAd, 500);
 }
 
 window.addEventListener("load", () => {
-    setTimeout(() => {
-        showAd();
-        setInterval(showAd, 40000);
-    }, 3000);
+  setTimeout(() => {
+    showAd();
+    setInterval(showAd, 40000);
+  }, 3000);
 });
 
-document.querySelectorAll('button').forEach(b => {
-    if(b.id !== 'marketBtn'){
-        b.addEventListener('click', showAd);
-    }
-});
+/* SUBMIT PRODUCT */
+submitBtn.onclick = () => {
+  showAd();
 
-/* ============================================================
-      ⭐ Product Submission (works with hosted image link)
-============================================================ */
-function submitProduct(){
-  const name = document.getElementById('productName').value;
-  const img = document.getElementById('hostedImage').value;
-  const url = document.getElementById('productUrl').value;
-  const price = document.getElementById('productPrice').value;
-  const currency = document.getElementById('currency').value;
-  const desc = document.getElementById('description').value;
-  const contact = document.getElementById('contactInfo').value;
+  const name = productName.value;
+  const img = hostedImage.value;
+  const url = productUrl.value;
+  const price = productPrice.value;
+  const currency = currency.value;
+  const desc = description.value;
+  const contact = contactInfo.value;
 
-  if(!name){ 
-    alert('Enter product name'); 
-    return;
-  }
-
-  const productId = 'P'+Date.now()+Math.floor(Math.random()*99);
-  const dt = new Date().toLocaleString('en-GB', {timeZone:'Africa/Lagos'});
-
-  const sellerId = tgUser.id || '';
-  const sellerUsername = tgUser.username ? '@'+tgUser.username : '';
-  const sellerName = tgUser.first_name + (tgUser.last_name ? ' '+tgUser.last_name : '');
+  const productId = "P" + Date.now();
+  const dt = new Date().toLocaleString("en-GB", { timeZone: "Africa/Lagos" });
 
   const adminMessage = `
 📦 New Product Submitted
 Product ID: ${productId}
 Name: ${name}
-Price: ${price ? price+' '+currency : ''}
-Image Link: ${img || 'N/A'}
+Price: ${price} ${currency}
+Image: ${img}
 URL: ${url}
 Description: ${desc}
 Contact: ${contact}
-Seller: ${sellerName} ${sellerUsername}
-Seller ID: ${sellerId}
+Seller: ${tgUser.first_name} @${tgUser.username}
+Seller ID: ${tgUser.id}
 Date & Time: ${dt}
 `;
 
   const sellerMessage = `
-✅ Your product submission is received and pending admin review
-Product Name: ${name}
+✅ Your product was submitted!
+Name: ${name}
 Product ID: ${productId}
-Price: ${price ? price+' '+currency : ''}
 `;
 
   statusMsg.textContent = "Submitting product...";
-  statusMsg.classList.remove('hidden');
-  statusMsg.style.color = 'orange';
+  statusMsg.classList.remove("hidden");
+  statusMsg.style.color = "orange";
 
   fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
     body: JSON.stringify({ chat_id: ADMIN_ID, text: adminMessage })
   })
-  .then(res => res.json())
-  .then(adminResp => {
-      if(adminResp.ok){
-          if(sellerId){
-              fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
-                  method:'POST',
-                  headers:{'Content-Type':'application/json'},
-                  body: JSON.stringify({ chat_id: sellerId, text: sellerMessage })
-              });
-          }
-          statusMsg.textContent = `✅ Product "${name}" submitted successfully! Product ID: ${productId}`;
-          statusMsg.style.color = 'green';
-          // Clear inputs but keep form open
-          inputs.forEach(i => {
-              i.value = '';
-              sessionStorage.removeItem(i.id);
-          });
-      } else {
-          statusMsg.textContent = '❌ Submission failed. Try again!';
-          statusMsg.style.color = 'red';
-      }
-  })
-  .catch(err => {
-      console.error(err);
-      statusMsg.textContent = '❌ Submission failed. Try again!';
-      statusMsg.style.color = 'red';
-  });
-}
+  .then(r => r.json())
+  .then(res => {
+    if(res.ok){
+      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ chat_id: tgUser.id, text: sellerMessage })
+      });
 
-submitBtn.addEventListener('click', submitProduct);
+      statusMsg.textContent = `✅ Submitted! Product ID: ${productId}`;
+      statusMsg.style.color = "green";
+
+      sessionStorage.clear();
+      document.querySelectorAll("input, textarea").forEach(i => i.value="");
+
+    } else {
+      statusMsg.textContent = "❌ Submission failed.";
+      statusMsg.style.color = "red";
+    }
+  });
+};
 </script>
 </body>
 </html>
