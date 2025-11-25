@@ -100,6 +100,18 @@
     cursor:pointer;
     font-size:16px;
   }
+  /* MAKE BUY NOW BUTTON BIGGER */
+.buyBtn {
+  width: 100%;
+  padding: 18px !important;
+  font-size: 20px !important;
+  font-weight: bold !important;
+  background: #1a73e8 !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  margin-top: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
 
   /* Dark theme styles */
   body.dark { background:#0f1113; color:#e6eef8; transition: background 0.25s, color 0.25s; }
@@ -353,7 +365,7 @@ function renderProducts(){
         <p>URL: <a href="${prod.url}" target="_blank">${prod.url}</a></p>
         <p>Price: ${prod.price} ${prod.currency}</p>
         <p>${prod.description}</p>
-        <button class="buyBtn">Buy Now</button>
+        <button class="buyBtn"> Buy Now </button>
       </div>
     `;
     container.appendChild(div);
