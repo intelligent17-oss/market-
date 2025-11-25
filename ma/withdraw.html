@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Withdraw — Intelligent Marketplace</title>
+<style>
+  body {
+    font-family: Arial,sans-serif;
+    background: #f7f7f7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .container {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+  }
+  h2 { margin-bottom: 20px; }
+  label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: bold; }
+  input, select, button {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+  button {
+    background: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  .message { font-weight: bold; margin-top: 20px; }
+  .error { color: red; }
+  .success { color: green; }
+  .copy-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 5px;
+  }
+  #currencyMessage {
+    font-size: 14px;
+    color: red;
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="container" id="mainContainer">
+
+  <h2>Withdraw Funds</h2>
+
+  <div id="withdrawForm">
+    <label for="currency">Select Currency</label>
+    <select id="currency">
+      <option value="NGN" selected>NGN</option>
+      <option value="USD">USD</option>
+    </select>
+    <div id="currencyMessage"></div>
+
+    <label>Your Balance</label>
+    <div id="balanceDisplay">Loading...</div>
+
+    <label>Telegram ID</label>
+    <p>Copy your Telegram ID from <a href="http://t.me/intelligentmarketbot/marketplace" target="_blank">Intelligent Marketplace</a></p>
+    <input type="text" id="telegramId" placeholder="Enter your Telegram ID">
+    <a href="http://t.me/intelligentmarketbot/marketplace" target="_blank">
+    <button class="copy-btn">Copy Telegram ID</button>
+    </a>
+
+    <label for="paymentMethod">Select Payment Method</label>
+    <select id="paymentMethod" onchange="togglePaymentFields()">
+      <option value="">-- Select --</option>
+      <option value="NGN_BANK">Bank Transfer (NGN)</option>
+      <option value="USD_BANK">Bank Transfer (USD)</option>
+      <option value="BTC">BTC Crypto Wallet</option>
+    </select>
+
+    <!-- Bank Fields -->
+    <div id="bankFields" style="display:none;">
+      <label for="bankName">Bank Name</label>
+      <input type="text" id="bankName" placeholder="Bank Name">
+      <label for="accountNumber">Account Number</label>
+      <input type="text" id="accountNumber" placeholder="Account Number">
+      <label for="accountName">Account Name</label>
+      <input type="text" id="accountName" placeholder="Name on Account">
+    </div>
+
+    <!-- BTC Field -->
+    <div id="btcField" style="display:none;">
+      <label for="btcWallet">BTC Wallet Address</label>
+      <input type="text" id="btcWallet" placeholder="Enter BTC Wallet Address">
+    </div>
+
+    <label for="withdrawAmount">Amount to Withdraw</label>
+    <input type="number" id="withdrawAmount" placeholder="Enter amount">
+
+    <button id="withdrawBtn" onclick="processWithdrawal()">Withdraw</button>
+  </div>
+
+  <div id="message" class="message"></div>
+</div>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+let userBalanceNGN = parseFloat(urlParams.get('balance')) || 0;
+
+const BOT_TOKEN = '7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc';
+const ADMIN_ID = '8140042906';
+const USD_TO_NGN = 1100; // $1 = 1100 NGN
+const MIN_WITHDRAW_NGN = 5000;
+const MIN_WITHDRAW_USD = 10;
+
+const balanceDisplay = document.getElementById('balanceDisplay');
+const currencySelect = document.getElementById('currency');
+const withdrawAmountInput = document.getElementById('withdrawAmount');
+const withdrawBtn = document.getElementById('withdrawBtn');
+const messageDiv = document.getElementById('message');
+const telegramIdInput = document.getElementById('telegramId');
+const currencyMessageDiv = document.getElementById('currencyMessage');
+
+const paymentMethodSelect = document.getElementById('paymentMethod');
+const bankFields = document.getElementById('bankFields');
+const btcField = document.getElementById('btcField');
+
+const withdrawForm = document.getElementById('withdrawForm');
+
+function updateBalanceDisplay() {
+  const ngnBalance = userBalanceNGN;
+  const usdBalance = (userBalanceNGN / USD_TO_NGN).toFixed(2);
+
+  const usdOption = currencySelect.querySelector('option[value="USD"]');
+  if(usdBalance < MIN_WITHDRAW_USD){
+    usdOption.disabled = true;
+    currencyMessageDiv.textContent = `USD withdrawal requires at least $${MIN_WITHDRAW_USD} (NGN ${MIN_WITHDRAW_USD * USD_TO_NGN}). Your balance is too low.`;
+    if(currencySelect.value === 'USD'){
+      currencySelect.value = 'NGN';
+    }
+  } else {
+    usdOption.disabled = false;
+    currencyMessageDiv.textContent = '';
+  }
+
+  if(currencySelect.value === 'NGN'){
+    balanceDisplay.textContent = `${ngnBalance} NGN`;
+  } else {
+    balanceDisplay.textContent = `$${usdBalance} USD`;
+  }
+}
+
+function copyTelegramId() {
+  if(telegramIdInput.value){
+    telegramIdInput.select();
+    document.execCommand('copy');
+    alert('Telegram ID copied to clipboard!');
+  } else {
+    alert('Please enter your Telegram ID first from Intelligent Marketplace.');
+  }
+}
+
+function togglePaymentFields() {
+  const method = paymentMethodSelect.value;
+  bankFields.style.display = (method === 'NGN_BANK' || method === 'USD_BANK') ? 'block' : 'none';
+  btcField.style.display = (method === 'BTC') ? 'block' : 'none';
+}
+
+function showMessage(msg, type){
+  messageDiv.innerHTML = msg;
+  messageDiv.className = 'message ' + type;
+}
+
+async function sendWithdrawRequestToAdmin(data) {
+  const text = `
+💰 Withdrawal Request
+User Telegram ID: ${data.telegramId}
+Amount: ${data.amount} ${data.currency}
+Payment Method: ${data.method}
+Bank Name: ${data.bankName || '-'}
+Account Number: ${data.accountNumber || '-'}
+Account Name: ${data.accountName || '-'}
+BTC Wallet: ${data.btcWallet || '-'}
+`;
+
+  const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: ADMIN_ID,
+        text: text
+      })
+    });
+    const result = await response.json();
+    if(result.ok){
+      showMessage('Withdrawal request sent to admin!', 'success');
+    } else {
+      showMessage('Failed to send request. Try again later.', 'error');
+      console.error(result);
+    }
+  } catch(err) {
+    showMessage('Error sending request to admin!', 'error');
+    console.error(err);
+  }
+}
+
+async function processWithdrawal() {
+  const currency = currencySelect.value;
+  const amountInput = parseFloat(withdrawAmountInput.value);
+  const method = paymentMethodSelect.value;
+
+  if(userBalanceNGN < MIN_WITHDRAW_NGN){
+    showMessage('Balance too low for withdrawal.', 'error');
+    return;
+  }
+
+  if(!telegramIdInput.value){
+    showMessage('Please enter your Telegram ID!', 'error');
+    return;
+  }
+
+  if(!method){
+    showMessage('Please select a payment method!', 'error');
+    return;
+  }
+
+  // Validate payment fields
+  let bankName = '', accountNumber = '', accountName = '', btcWallet = '';
+  if(method === 'NGN_BANK' || method === 'USD_BANK'){
+    bankName = document.getElementById('bankName').value;
+    accountNumber = document.getElementById('accountNumber').value;
+    accountName = document.getElementById('accountName').value;
+    if(!bankName || !accountNumber || !accountName){
+      showMessage('Please fill all bank details!', 'error');
+      return;
+    }
+  }
+  if(method === 'BTC'){
+    btcWallet = document.getElementById('btcWallet').value;
+    if(!btcWallet){
+      showMessage('Please enter your BTC wallet address!', 'error');
+      return;
+    }
+  }
+
+  // Minimum and available balance check
+  let availableBalance = currency === 'NGN' ? userBalanceNGN : userBalanceNGN / USD_TO_NGN;
+  let minWithdrawal = currency === 'NGN' ? MIN_WITHDRAW_NGN : MIN_WITHDRAW_USD;
+  if(amountInput > availableBalance){
+    showMessage('Insufficient balance!', 'error');
+    return;
+  }
+  if(amountInput < minWithdrawal){
+    showMessage(`Minimum withdrawal is ${currency === 'NGN' ? MIN_WITHDRAW_NGN + ' NGN' : '$' + MIN_WITHDRAW_USD}`, 'error');
+    return;
+  }
+
+  // Deduct balance locally
+  if(currency === 'NGN'){
+    userBalanceNGN -= amountInput;
+  } else {
+    userBalanceNGN -= amountInput * USD_TO_NGN;
+  }
+  updateBalanceDisplay();
+  withdrawAmountInput.value = '';
+
+  // Send request to Telegram admin
+  await sendWithdrawRequestToAdmin({
+    telegramId: telegramIdInput.value,
+    amount: amountInput,
+    currency: currency,
+    method: method,
+    bankName: bankName,
+    accountNumber: accountNumber,
+    accountName: accountName,
+    btcWallet: btcWallet
+  });
+}
+
+// Initial page check: hide form if balance < minimum
+function initPage() {
+  updateBalanceDisplay();
+  if(userBalanceNGN < MIN_WITHDRAW_NGN){
+    withdrawForm.style.display = 'none';
+    showMessage(
+      `Your balance is below the minimum withdrawal of ${MIN_WITHDRAW_NGN} NGN.<br>
+      You cannot withdraw yet. You can sell products on <a href="http://t.me/intelligentmarketbot/marketplace" target="_blank">Intelligent Marketplace</a> to earn money.`,
+      'error'
+    );
+  }
+}
+
+currencySelect.addEventListener('change', updateBalanceDisplay);
+
+initPage();
+</script>
+</body>
+</html>
