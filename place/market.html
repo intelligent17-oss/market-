@@ -2,241 +2,352 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Intelligent Marketplace</title>
-<style>
-body { font-family: Arial,sans-serif; margin:0; padding:20px; background:#f5f5f5; }
-.container { max-width:900px; margin:auto; }
-h2 { text-align:center; }
-.product { background:#fff; padding:15px; margin:15px 0; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.05); display:flex; gap:15px; align-items:flex-start; }
-.product img { max-width:150px; border-radius:6px; margin-bottom:5px; }
-.product-details { flex:1; }
-.product h3 { margin:0 0 5px 0; }
-.product p { margin:5px 0; }
-.button { padding:10px 15px; margin-top:10px; background:#007bff; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:700; }
-#buyModal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
-#buyModal .modal-content { background:#fff; padding:20px; border-radius:10px; max-width:500px; width:100%; }
-#buyModal input { width:100%; padding:10px; margin:10px 0; border-radius:6px; border:1px solid #ccc; }
-.status { padding:10px; margin:10px 0; border-radius:6px; font-weight:600; display:none; }
-.loading { background:#fff3cd; color:#856404; }
-.success { background:#d4edda; color:#155724; }
-.error { background:#f8d7da; color:#721c24; }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sell Product — Intelligent Marketplace</title>
+
+<!-- ✅ Telegram WebApp SDK -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+  :root {
+    --bg: #f7f7f7;
+    --text: #111;
+    --button-bg: #000;
+    --button-text: #fff;
+    --card-bg: #ffffff;
+  }
+
+  /* Dark theme */
+  body.dark {
+    --bg: #0f1113;
+    --text: #e6eef8;
+    --button-bg: #222;
+    --button-text: #fff;
+    --card-bg: #151719;
+  }
+
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.25s, color 0.25s;
+  }
+
+  h2,h3 { margin-bottom:10px; }
+  input, textarea, select, button {
+    width:100%; padding:10px; margin:6px 0;
+    background: var(--card-bg);
+    color: var(--text);
+    border: 1px solid #999;
+    border-radius: 6px;
+  }
+
+  button {
+    background: var(--button-bg);
+    color: var(--button-text);
+    border:none; cursor:pointer;
+  }
+
+  button:disabled { background:#555; cursor:not-allowed; }
+  .hidden { display:none; }
+  .nav { display:flex; gap:10px; margin-top:20px; }
+  .nav button { flex:1; }
+  a { color:blue; }
+  #userInfo { margin-bottom:15px; }
+  #userInfo img {
+    border-radius:50%; width:60px; height:60px; object-fit:cover;
+    display:block; margin-bottom:5px;
+  }
+
+  /* Toggle button */
+  #themeToggle {
+    position: fixed;
+    top: 5px;
+    right: 5px;
+    background: var(--button-bg);
+    color: var(--button-text);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    z-index: 999;
+  }
+  #waBtn {
+  width: 100%;
+  padding: 15px !important;
+  font-size: 20px !important;
+  font-weight: bold !important;
+  background: #045405 !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  margin-top: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+</style>
 </head>
 <body>
-<div class="container">
-<h2>Intelligent Marketplace</h2>
-<div id="products"></div>
-<div id="status" class="status"></div>
+
+<!-- Theme Toggle -->
+<button id="themeToggle" aria-label="Toggle theme">🌙 Dark Mode</button>
+
+<h2>Step 1: share and repost our bot link on your WhatsApp status and some groups & people to start selling account</h2>
+<p>Repost the bot link on your WhatsApp status and at least 5 groups/contacts: repost on whatsapp and come back again to sell account</p>
+
+<button id="waBtn">Repost on WhatsApp</button>
+      <div style="background:#fff4ce; padding:10px; margin-top:5px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold;">
+        ⚠️ We show multiples of ads, in this webapp please stay patient for each ads, turning on ads blocker, might block some of our button from working expecialy selling of product.
+      </div>
+<div id="formContainer" class="hidden">
+
+  <!-- Telegram user info -->
+  <div id="userInfo">
+    <h3>Logged in as:</h3>
+    <img id="profilePic" src="https://via.placeholder.com/60" alt="Profile">
+    <p id="fullName"></p>
+    <p id="username"></p>
+    <p id="userId"></p>
+  </div>
+
+  <h2>Step 2: Sell your product</h2>
+  <label>Product Name</label>
+  <input required="text"  type="text" id="productName">
+
+  <label>Upload local product image (preview only)</label>
+  <input required="text"  type="file" id="localImage" accept="image/*">
+          <div style="background:#fff4ce; padding:10px; margin-top:5px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold;">
+        ⚠️ Please! make sure you visit "<a href="https://imgbb.com/" target="_blank">imgbb website</a>" and host your image or else the image will not display when it was uploaded
+      </div>
+        <label>Host image (paste URL after hosting)</label>
+  <p>Need hosting? <a href="https://imgbb.com/" target="_blank">Use imgbb</a></p>
+  <input required="text"  type="url" id="hostedImage" placeholder="https://i.imgur.com/...">
+
+  <label>Product URL</label>
+  <input required="text"  type="url" id="productUrl" placeholder="https://...">
+
+  <label>Price</label>
+  <input required="text"  type="number" id="productPrice" placeholder="5000">
+  <select id="currency">
+    <option value="NGN">NGN</option>
+    <option value="USD">$ USD</option>
+  </select>
+
+  <label>Description</label>
+  <textarea id="description"></textarea>
+
+  <label>Contact info (WhatsApp / Telegram / Other)</label>
+  <input required="text"  type="text" id="contactInfo">
+
+  <button id="submitBtn">Submit Product</button>
+
+  <p id="statusMsg" class="hidden"></p>
 </div>
 
-<!-- Buy Modal -->
-<div id="buyModal">
-<div class="modal-content">
-<h3>Complete Your Payment</h3>
-<p id="paymentInfo"></p>
-<label>Upload Payment Screenshot:</label>
-<input type="file" id="paymentScreenshot" accept="image/*">
-<label>Contact Info (Whatsapp/Telegram/Email):</label>
-<input type="text" id="buyerContact" placeholder="Enter your contact info">
-<button id="submitPayment" class="button">Submit Payment</button>
-<button id="closeModal" class="button" style="background:#dc3545;">Cancel</button>
-</div>
+<div class="nav">
+  <button id="reloadBtn">Sell Account</button>
+  <button id="marketBtn">Marketplace</button>
 </div>
 
 <!-- Monetag SDK -->
 <script src="//libtl.com/sdk.js" data-zone="9830606" data-sdk="show_9830606"></script>
 
 <script>
-// ===== CONFIG =====
-const ADMIN_ID = "8140042906";  // Admin Telegram ID
-const BOT_TOKEN = "7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
-const PAYMENT_NG = "9114301708 - Opay - olatunji Ayomide Abdumalik";
-const PAYMENT_BTC = "bc1qxhyddpkgvdc68tj9xk5gf5k2vnxmnfy4xrwwr4";
+/* ============================================================
+      ✅ Theme System
+============================================================ */
+const themeToggle = document.getElementById("themeToggle");
+let savedTheme = localStorage.getItem("theme");
 
-// Telegram user info
+function applyTheme(theme){
+  if(theme === "dark"){
+    document.body.classList.add("dark");
+    themeToggle.textContent = "☀ Light Mode";
+  } else {
+    document.body.classList.remove("dark");
+    themeToggle.textContent = "🌙 Dark Mode";
+  }
+}
+
+if(!savedTheme){
+  if(window.matchMedia("(prefers-color-scheme: dark)").matches){
+    applyTheme("dark");
+  } else {
+    applyTheme("light");
+  }
+} else {
+  applyTheme(savedTheme);
+}
+
+if(!savedTheme && window.matchMedia){
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener
+  ? window.matchMedia("(prefers-color-scheme: dark)").addEventListener('change', e => {
+      applyTheme(e.matches ? "dark" : "light");
+    })
+  : window.matchMedia("(prefers-color-scheme: dark)").addListener(e => {
+      applyTheme(e.matches ? "dark" : "light");
+    });
+}
+
+themeToggle.onclick = () => {
+  const nowDark = document.body.classList.toggle("dark");
+  applyTheme(nowDark ? "dark" : "light");
+  try{ localStorage.setItem("theme", nowDark ? "dark" : "light"); } catch(e){}
+};
+
+/* ============================================================
+      ✅ Telegram WebApp
+============================================================ */
 const tg = window.Telegram.WebApp;
 tg.expand();
-const TELEGRAM_USER_ID = tg.initDataUnsafe?.user?.id || "unknown";
-const TELEGRAM_USER_NAME = tg.initDataUnsafe?.user?.first_name || "Buyer";
+tg.setBackgroundColor("secondary_bg_color");
+Telegram.WebApp.ready();
 
-// ===== PRODUCTS ARRAY =====
-const productsData = [
-  {
-    id: "P001",
-    name: "Instagram Account",
-    description: "High-quality IG account with 10k followers.",
-    price: "₦5000",
-    images: ["https://via.placeholder.com/150"],
-    sellerId: "123456789",
-    sellerWhatsapp: "+2348012345678"
-  },
-  {
-    id: "P002",
-    name: "Twitter Account",
-    description: "Active Twitter account with 5k followers.",
-    price: "$50",
-    images: ["https://via.placeholder.com/150"],
-    sellerId: "987654321",
-    sellerWhatsapp: "+2348098765432"
-  },
-  {
-    id: "P002",
-    name: "Twitter Account",
-    description: "Active Twitter account with 5k followers.",
-    price: "$50",
-    images: ["https://via.placeholder.com/150"],
-    sellerId: "987654321",
-    sellerWhatsapp: "+2348098765432"
-  }
-  ,
-  {
-    id: "P002",
-    name: "Twitter Account",
-    description: "Active Twitter account with 5k followers.",
-    price: "$50",
-    images: ["https://via.placeholder.com/150"],
-    sellerId: "987654321",
-    sellerWhatsapp: "+2348098765432"
-  }
-  ,
-  {
-    id: "P002",
-    name: "Twitter Account",
-    description: "Active Twitter account with 5k followers.",
-    price: "$50",
-    images: ["https://via.placeholder.com/150"],
-    sellerId: "987654321",
-    sellerWhatsapp: "+2348098765432"
-  }
-];
+const BOT_TOKEN = '7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc';
+const ADMIN_ID = '6976365864';
+const WHATSAPP_LINK = "https://wa.me/?text=*Hey%20guy's%20%F0%9F%91%8B*%20%20%20*%E2%98%91%EF%B8%8F%20Are%20you%20finding%20a%20marketplace%20where%20you%20can%20buy%20and%20sell%20any%20social%20media%20account%2C%20tool%2C%20website%20and%20many%20more%F0%9F%A7%A9*%20%20%20*%F0%9F%91%A9%E2%80%8D%F0%9F%92%BB%20you%20can%20also%20generate%20a%20hacking%20links%20you%20can%20use%20to%20hack%20any%20social%20media%20account%20for%20free%20and%20also%20USA%2FUK%20Banks%20%E2%9C%85*%20%20%20*%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87%F0%9F%91%87*%20*https%3A%2F%2Ft.me%2Fintelligentmarketbot%3Fstart%3Dar1810544353";
 
-// ===== FUNCTIONS =====
-const productsContainer = document.getElementById("products");
-const buyModal = document.getElementById("buyModal");
-const paymentInfoEl = document.getElementById("paymentInfo");
-const screenshotInput = document.getElementById("paymentScreenshot");
-const buyerContactInput = document.getElementById("buyerContact");
-const statusBox = document.getElementById("status");
-let currentProduct = null;
+const waBtn = document.getElementById('waBtn');
+const formContainer = document.getElementById('formContainer');
+const submitBtn = document.getElementById('submitBtn');
+const statusMsg = document.getElementById('statusMsg');
+const reloadBtn = document.getElementById('reloadBtn');
+const marketBtn = document.getElementById('marketBtn');
 
-function showStatus(type,msg,autoHide=0){
-  statusBox.className = "status "+type;
-  statusBox.textContent = msg;
-  statusBox.style.display="block";
-  if(autoHide) setTimeout(()=>{statusBox.style.display="none"}, autoHide);
-}
+const tgUser = Telegram.WebApp.initDataUnsafe.user || {};
 
-// Render products
-function renderProducts(){
-  productsContainer.innerHTML="";
-  productsData.forEach(prod=>{
-    const div = document.createElement("div");
-    div.className="product";
-    div.innerHTML=`
-      <div>${prod.images.map(img=>`<img src="${img}" alt="${prod.name}">`).join('')}</div>
-      <div class="product-details">
-        <h3>${prod.name}</h3>
-        <p>${prod.description}</p>
-        <p>Price: ${prod.price}</p>
-        <p>Product ID: ${prod.id}</p>
-        <p>Seller ID: ${prod.sellerId}</p>
-        <button class="button buyBtn" data-id="${prod.id}">Buy Product</button>
-      </div>
-    `;
-    productsContainer.appendChild(div);
-  });
+document.getElementById('fullName').textContent =
+  (tgUser.first_name || "") + (tgUser.last_name ? " " + tgUser.last_name : "");
+document.getElementById('username').textContent =
+  tgUser.username ? '@' + tgUser.username : '';
+document.getElementById('userId').textContent =
+  'Telegram ID: ' + (tgUser.id || '');
+if(tgUser.photo_url) document.getElementById('profilePic').src = tgUser.photo_url;
 
-  document.querySelectorAll(".buyBtn").forEach(btn=>{
-    btn.addEventListener("click",()=>{openBuyModal(btn.dataset.id);});
-  });
-}
+// ===== Show form permanently once WhatsApp button is clicked =====
+waBtn.onclick = () => {
+    showAd();
+    window.open(WHATSAPP_LINK, '_blank', 'noopener');
+    formContainer.classList.remove('hidden'); // never hide again until reload
+};
 
-// Open buy modal
-function openBuyModal(productId){
-  currentProduct = productsData.find(p=>p.id===productId);
-  if(!currentProduct) return;
-  paymentInfoEl.innerHTML=`
-    <b>Pay Nigeria:</b> ${PAYMENT_NG}<br>
-    <b>Pay Foreign:</b> ${PAYMENT_BTC}<br><br>
-    After payment, upload screenshot and enter your contact info.
-  `;
-  buyerContactInput.value="";
-  screenshotInput.value="";
-  buyModal.style.display="flex";
-}
-
-document.getElementById("closeModal").addEventListener("click",()=>{buyModal.style.display="none";});
-
-// Submit payment
-document.getElementById("submitPayment").addEventListener("click",async ()=>{
-  const file = screenshotInput.files[0];
-  const contact = buyerContactInput.value.trim();
-  if(!file) return showStatus("error","Please upload screenshot",3000);
-  if(!contact) return showStatus("error","Please enter your contact info",3000);
-  if(!currentProduct) return;
-  showStatus("loading","Submitting payment...");
-
-  try{
-    const form = new FormData();
-    form.append("chat_id",ADMIN_ID);
-    form.append("photo",file);
-    form.append("caption",
-      `📌 New Pending Payment\n`+
-      `Product: ${currentProduct.name} (${currentProduct.id})\n`+
-      `Price: ${currentProduct.price}\n`+
-      `Seller ID: ${currentProduct.sellerId}\n`+
-      `Seller Whatsapp: ${currentProduct.sellerWhatsapp}\n`+
-      `Buyer ID: ${TELEGRAM_USER_ID}\n`+
-      `Buyer Contact: ${contact}`
-    );
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`,{method:"POST",body:form});
-
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        chat_id:TELEGRAM_USER_ID,
-        text:`✅ Payment submitted!\nAdmin will review your payment to purchase "${currentProduct.name}" (${currentProduct.id}) within some hours (up to 12h).\nPrice: ${currentProduct.price}\nPlease be patient.\nNeed help? WhatsApp: +2348121697423`
-      })
+// Keep input values while user is on page
+const inputs = formContainer.querySelectorAll('input, textarea, select');
+inputs.forEach(input => {
+    input.addEventListener('input', () => {
+        sessionStorage.setItem(input.id, input.value);
     });
-
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        chat_id:currentProduct.sellerId,
-        text:`📌 New Purchase Submission\nProduct: ${currentProduct.name}\nProduct ID: ${currentProduct.id}\nPrice: ${currentProduct.price}\nPlease wait while admin reviews.\nNeed help? WhatsApp: +2348121697423`
-      })
-    });
-
-    showStatus("success","Payment submitted! Admin will review.",5000);
-    buyModal.style.display="none";
-  }catch(err){
-    showStatus("error","Failed to submit payment",3000);
-    console.error(err);
-  }
+    const saved = sessionStorage.getItem(input.id);
+    if(saved) input.value = saved;
 });
 
-// Initialize products
-renderProducts();
+reloadBtn.onclick = () => { showAd(); location.reload(); };
+marketBtn.onclick = () => window.location.href='buy.html';
 
-// ===== MONETAG ADS =====
 function showAd() {
     if (typeof show_9830606 === "function") {
         show_9830606();
     } else {
-        console.log("Monetag function not ready yet");
+        setTimeout(showAd, 500);
     }
 }
 
 window.addEventListener("load", () => {
     setTimeout(() => {
         showAd();
-        setInterval(showAd, 30000); // repeat every 30s
-    }, 5000); // first ad after 5s
+        setInterval(showAd, 40000);
+    }, 3000);
 });
+
+document.querySelectorAll('button').forEach(b => {
+    if(b.id !== 'marketBtn'){
+        b.addEventListener('click', showAd);
+    }
+});
+
+/* ============================================================
+      ⭐ Product Submission (works with hosted image link)
+============================================================ */
+function submitProduct(){
+  const name = document.getElementById('productName').value;
+  const img = document.getElementById('hostedImage').value;
+  const url = document.getElementById('productUrl').value;
+  const price = document.getElementById('productPrice').value;
+  const currency = document.getElementById('currency').value;
+  const desc = document.getElementById('description').value;
+  const contact = document.getElementById('contactInfo').value;
+
+  if(!name){ 
+    alert('Enter product name'); 
+    return;
+  }
+
+  const productId = 'P'+Date.now()+Math.floor(Math.random()*99);
+  const dt = new Date().toLocaleString('en-GB', {timeZone:'Africa/Lagos'});
+
+  const sellerId = tgUser.id || '';
+  const sellerUsername = tgUser.username ? '@'+tgUser.username : '';
+  const sellerName = tgUser.first_name + (tgUser.last_name ? ' '+tgUser.last_name : '');
+
+  const adminMessage = `
+📦 New Product Submitted
+Product ID: ${productId}
+Name: ${name}
+Price: ${price ? price+' '+currency : ''}
+Image Link: ${img || 'N/A'}
+URL: ${url}
+Description: ${desc}
+Contact: ${contact}
+Seller: ${sellerName} ${sellerUsername}
+Seller ID: ${sellerId}
+Date & Time: ${dt}
+`;
+
+  const sellerMessage = `
+✅ Your product submission is received and pending admin review
+Product Name: ${name}
+Product ID: ${productId}
+Price: ${price ? price+' '+currency : ''}
+`;
+
+  statusMsg.textContent = "Submitting product...";
+  statusMsg.classList.remove('hidden');
+  statusMsg.style.color = 'orange';
+
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ chat_id: ADMIN_ID, text: adminMessage })
+  })
+  .then(res => res.json())
+  .then(adminResp => {
+      if(adminResp.ok){
+          if(sellerId){
+              fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+                  method:'POST',
+                  headers:{'Content-Type':'application/json'},
+                  body: JSON.stringify({ chat_id: sellerId, text: sellerMessage })
+              });
+          }
+          statusMsg.textContent = `✅ Product "${name}" submitted successfully! Product ID: ${productId}`;
+          statusMsg.style.color = 'green';
+          // Clear inputs but keep form open
+          inputs.forEach(i => {
+              i.value = '';
+              sessionStorage.removeItem(i.id);
+          });
+      } else {
+          statusMsg.textContent = '❌ Submission failed. Try again!';
+          statusMsg.style.color = 'red';
+      }
+  })
+  .catch(err => {
+      console.error(err);
+      statusMsg.textContent = '❌ Submission failed. Try again!';
+      statusMsg.style.color = 'red';
+  });
+}
+
+submitBtn.addEventListener('click', submitProduct);
 </script>
 </body>
 </html>
