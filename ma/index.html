@@ -1,105 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Sell Product — Intelligent Marketplace</title>
 
 <!-- Telegram SDK -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
-  :root {
-    --bg: #f7f7f7;
-    --text: #111;
-    --button-bg: #000;
-    --button-text: #fff;
-    --card-bg: #ffffff;
+  :root{
+    --bg:#f7f7f7;
+    --text:#111;
+    --card:#fff;
+    --accent:#000;
+    --success:#1E8A3C;
+    --error:#C92A2A;
+    --warning:#D97706;
   }
-
-  /* Dark theme */
-  body.dark {
-    --bg: #0f1113;
-    --text: #e6eef8;
-    --button-bg: #222;
-    --button-text: #fff;
-    --card-bg: #151719;
+  body.dark{
+    --bg:#0f1113;
+    --text:#e6eef8;
+    --card:#151719;
+    --accent:#fff;
   }
-
-  body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-    background: var(--bg);
-    color: var(--text);
-    transition: background 0.25s, color 0.25s;
-  }
-
-  h2,h3 { margin-bottom:10px; }
-
-  input, textarea, select, button {
-    width:100%; padding:10px; margin:6px 0;
-    background: var(--card-bg);
-    color: var(--text);
-    border: 1px solid #999;
-    border-radius: 6px;
-  }
-
-  button {
-    background: var(--button-bg);
-    color: var(--button-text);
-    border:none;
-    cursor:pointer;
-  }
-
-  button:disabled { background:#555; cursor:not-allowed; }
-
-  .hidden { display:none; }
-
-  .nav { display:flex; gap:10px; margin-top:20px; }
-  .nav button { flex:1; }
-
-  a { color:blue; }
-
-  #userInfo img {
-    border-radius:50%;
-    width:60px;
-    height:60px;
-    object-fit:cover;
-    display:block;
-    margin-bottom:5px;
-  }
-
-  /* Theme Toggle Btn */
-  #themeToggle {
-    position: fixed;
-    top: 5px;
-    right: 5px;
-    background: var(--button-bg);
-    color: var(--button-text);
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    cursor: pointer;
-    z-index: 999;
-  }
-
-  /* WhatsApp Repost button */
-  #waBtn {
-    width: 100%;
-    padding: 15px !important;
-    font-size: 20px !important;
-    font-weight: bold !important;
-    background: #045405 !important;
-    color: #fff !important;
-    border-radius: 10px !important;
-    margin-top: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  body{ font-family: Arial, Helvetica, sans-serif; padding:20px; background:var(--bg); color:var(--text); transition: background .25s,color .25s; }
+  h2,h3{ margin:.25rem 0 .75rem 0; }
+  input,textarea,select,button{ width:100%; padding:10px; margin:6px 0; background:var(--card); color:var(--text); border:1px solid #999; border-radius:8px; box-sizing:border-box; }
+  label{ font-weight:600; margin-top:8px; display:block; }
+  button{ cursor:pointer; border:none; background:var(--accent); color:var(--card); }
+  button:disabled{ background:#777; cursor:not-allowed; }
+  .hidden{ display:none; }
+  .nav{ display:flex; gap:10px; margin-top:18px; }
+  .nav button{ flex:1; }
+  a{ color:blue; text-decoration:underline; }
+  #userInfo img{ border-radius:50%; width:60px; height:60px; object-fit:cover; display:block; margin-bottom:6px; }
+  #themeToggle{ position:fixed; top:8px; right:8px; background:var(--card); color:var(--text); padding:8px 12px; border-radius:10px; z-index:999; border:1px solid #888; }
+  #waBtn{ padding:14px; font-size:18px; font-weight:700; background:#045405; color:#fff; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+  .notice{ background:#fff4ce; padding:10px; margin-top:6px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold; }
+  /* centered popup */
+  .popupOverlay{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.35); z-index:2000; }
+  .popup{ max-width:460px; width:90%; background:var(--card); color:var(--text); border-radius:12px; padding:22px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.35); }
+  .popup .title{ font-size:20px; font-weight:700; margin-bottom:8px; }
+  .popup .msg{ font-size:16px; margin-bottom:10px; }
+  .popup .ok{ margin-top:8px; padding:10px 14px; border-radius:8px; cursor:pointer; border:none; }
+  .popup.success{ border-top:6px solid var(--success); }
+  .popup.error{ border-top:6px solid var(--error); }
+  .required{ color:var(--error); margin-left:6px; font-weight:700; }
+  /* status inline (for small screen) */
+  #statusMsg{ display:block; margin-top:10px; font-weight:700; font-size:15px; }
+  h2 {
+    margin-top: 50px;
   }
 </style>
 </head>
 <body>
 
-<!-- Theme Toggle -->
 <button id="themeToggle">🌙 Dark Mode</button>
 
 <h2>Step 1: Share our bot link on WhatsApp to start selling</h2>
@@ -107,16 +63,16 @@
 
 <button id="waBtn">Repost on WhatsApp</button>
 
-<div style="background:#fff4ce; padding:10px; margin-top:5px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold;">
-⚠️ We show multiple ads in this webapp. Please be patient. Blocking ads may break some buttons.
+<div class="notice">
+  ⚠️ We show multiple ads in this webapp. Please be patient. Blocking ads may break some buttons.
 </div>
 
 <!-- FORM -->
-<div id="formContainer" class="hidden">
+<div id="formContainer" class="hidden" aria-hidden="true">
 
-  <div id="userInfo">
+  <div id="userInfo" style="margin-top:18px;">
     <h3>Logged in as:</h3>
-    <img id="profilePic" src="https://via.placeholder.com/60">
+    <img id="profilePic" src="https://via.placeholder.com/60" alt="Profile picture">
     <p id="fullName"></p>
     <p id="username"></p>
     <p id="userId"></p>
@@ -124,186 +80,399 @@
 
   <h2>Step 2: Sell your product</h2>
 
-  <label>Product Name</label>
-  <input type="text" id="productName">
+  <form id="sellForm" novalidate>
+    <label>Product Name <span class="required">*</span></label>
+    <input type="text" id="productName" required placeholder="e.g. Instagram account - 10k followers">
 
-  <label>Upload Local Image (preview only)</label>
-  <input type="file" id="localImage" accept="image/*">
+    <label>Upload Local Image (preview only)</label>
+    <input type="file" id="localImage" accept="image/*">
 
-  <div style="background:#fff4ce; padding:10px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold;">
-  ⚠️ Host your image on <a href="https://imgbb.com/" target="_blank">imgbb</a> or it won't display.
-  </div>
+    <div class="notice" style="margin-bottom:8px;">
+      ⚠️ Host your image on <a href="https://imgbb.com/" target="_blank" rel="noopener">imgbb</a> or it won't display. (Hosted Image URL is required.)
+    </div>
 
-  <label>Hosted Image URL</label>
-  <input type="url" id="hostedImage" placeholder="https://i.imgur.com/...">
+    <label>Hosted Image URL <span class="required">*</span></label>
+    <input type="url" id="hostedImage" required placeholder="https://i.imgur.com/....">
 
-  <label>Product URL</label>
-  <input type="url" id="productUrl">
+    <label>Product URL <span class="required">*</span></label>
+    <input type="url" id="productUrl" required placeholder="https://...">
 
-  <label>Price</label>
-  <input type="number" id="productPrice">
-  <select id="currency">
-    <option value="NGN">NGN</option>
-    <option value="USD">USD</option>
-  </select>
+    <label>Price <span class="required">*</span></label>
+    <input type="number" id="productPrice" required placeholder="Amount">
 
-  <label>Description</label>
-  <textarea id="description"></textarea>
+    <label>Currency <span class="required">*</span></label>
+    <select id="currency" required>
+      <option value="NGN">NGN</option>
+      <option value="USD">USD</option>
+    </select>
 
-  <label>Contact Info</label>
-  <input type="text" id="contactInfo" placeholder="Whatsapp: +234xxxxxxx">
+    <label>Description <span class="required">*</span></label>
+    <textarea id="description" required rows="4" placeholder="Describe the product"></textarea>
 
-  <button id="submitBtn">Submit Product</button>
+    <label>Contact Info <span class="required">*</span></label>
+    <input type="text" id="contactInfo" required placeholder="Whatsapp: +234...">
 
-  <p id="statusMsg" class="hidden"></p>
+    <button id="submitBtn" type="button">Submit Product</button>
+
+    <p id="statusMsg" class="hidden" role="status" aria-live="polite"></p>
+  </form>
 </div>
 
-<div class="nav">
+<div class="nav" style="margin-top:14px;">
   <button id="reloadBtn">Sell Account</button>
   <button id="marketBtn">Marketplace</button>
 </div>
 
-<!-- ⭐ Monetag SDK (ads) -->
+<!-- Monetag SDK -->
 <script src="//libtl.com/sdk.js" data-zone="9830606" data-sdk="show_9830606"></script>
 
+<!-- Popup container (created dynamically by JS) -->
+
 <script>
-/* THEME SYSTEM */
-const themeToggle = document.getElementById("themeToggle");
-let savedTheme = localStorage.getItem("theme");
-
+/* ----- THEME ----- */
+const themeToggle = document.getElementById('themeToggle');
+let savedTheme = localStorage.getItem('theme');
 function applyTheme(t){
-  if(t === "dark"){
-    document.body.classList.add("dark");
-    themeToggle.textContent = "☀ Light Mode";
-  } else {
-    document.body.classList.remove("dark");
-    themeToggle.textContent = "🌙 Dark Mode";
-  }
+  if(t === 'dark'){ document.body.classList.add('dark'); themeToggle.textContent = '☀ Light Mode'; }
+  else { document.body.classList.remove('dark'); themeToggle.textContent = '🌙 Dark Mode'; }
 }
-
-applyTheme(savedTheme || "light");
-
+applyTheme(savedTheme || 'light');
 themeToggle.onclick = () => {
-  const isDark = document.body.classList.toggle("dark");
-  applyTheme(isDark ? "dark" : "light");
-  localStorage.setItem("theme", isDark ? "dark" : "light");
+  const isDark = document.body.classList.toggle('dark');
+  applyTheme(isDark ? 'dark' : 'light');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
 };
 
-/* TELEGRAM WEBAPP */
-const tg = window.Telegram.WebApp;
-tg.expand();
-Telegram.WebApp.ready();
+/* ----- TELEGRAM WEBAPP ----- */
+const tg = window.Telegram?.WebApp;
+if(tg){ tg.expand(); Telegram.WebApp.ready(); }
+const tgUser = (tg && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) ? Telegram.WebApp.initDataUnsafe.user : { first_name:'Guest', id:0 };
 
+/* BOT CONFIG - set your real BOT_TOKEN and ADMIN_ID */
 const BOT_TOKEN = "7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
 const ADMIN_ID = "6976365864";
 
-const WHATSAPP_LINK =
-"https://wa.me/?text=Check%20out%20this%20marketplace%20to%20buy%20and%20sell%20social%20media%20accounts!%20https://t.me/intelligentmarketbot";
+/* WHATSAPP LINK */
+const WHATSAPP_LINK = "https://wa.me/?text=Check%20out%20this%20marketplace%20to%20buy%20and%20sell%20social%20media%20accounts!%20https://t.me/intelligentmarketbot";
 
-const waBtn = document.getElementById("waBtn");
-const formContainer = document.getElementById("formContainer");
-const submitBtn = document.getElementById("submitBtn");
-const statusMsg = document.getElementById("statusMsg");
+/* DOM */
+const waBtn = document.getElementById('waBtn');
+const formContainer = document.getElementById('formContainer');
+const submitBtn = document.getElementById('submitBtn');
+const statusMsg = document.getElementById('statusMsg');
+const sellForm = document.getElementById('sellForm');
+const localImage = document.getElementById('localImage');
+const hostedImage = document.getElementById('hostedImage');
+const productName = document.getElementById('productName');
+const productUrl = document.getElementById('productUrl');
+const productPrice = document.getElementById('productPrice');
+const currencyEl = document.getElementById('currency');
+const description = document.getElementById('description');
+const contactInfo = document.getElementById('contactInfo');
 
-const tgUser = Telegram.WebApp.initDataUnsafe.user || {};
+document.getElementById('fullName').textContent = (tgUser.first_name || '') + (tgUser.last_name ? ' ' + tgUser.last_name : '');
+document.getElementById('username').textContent = tgUser.username ? '@' + tgUser.username : '';
+document.getElementById('userId').textContent = 'Telegram ID: ' + (tgUser.id || 'N/A');
+if(tgUser.photo_url) document.getElementById('profilePic').src = tgUser.photo_url;
 
-document.getElementById("fullName").textContent = tgUser.first_name + " " + (tgUser.last_name || "");
-document.getElementById("username").textContent = tgUser.username ? "@" + tgUser.username : "";
-document.getElementById("userId").textContent = "Telegram ID: " + tgUser.id;
-if(tgUser.photo_url) document.getElementById("profilePic").src = tgUser.photo_url;
-
-/* SHOW FORM AFTER WHATSAPP */
-waBtn.onclick = () => {
-  showAd();
-  window.open(WHATSAPP_LINK, "_blank", "noopener");
-  formContainer.classList.remove("hidden");
-};
-
-/* SAVE INPUTS */
-document.querySelectorAll("#formContainer input, textarea, select").forEach(i => {
-  i.addEventListener("input", () => sessionStorage.setItem(i.id, i.value));
-  const saved = sessionStorage.getItem(i.id);
-  if(saved) i.value = saved;
+/* Persist form inputs in sessionStorage */
+Array.from(sellForm.elements).forEach(el => {
+  if(!el.id) return;
+  // restore
+  const saved = sessionStorage.getItem(el.id);
+  if(saved) el.value = saved;
+  el.addEventListener('input', () => sessionStorage.setItem(el.id, el.value));
 });
 
-/* SHOW ADS */
-function showAd(){
-  if(typeof show_9830606 === "function") show_9830606();
-  else setTimeout(showAd, 500);
+/* Keep "shared" flag persisted so form remains open if user returns */
+function setSharedFlag(){
+  sessionStorage.setItem('botShared', '1');
+  sessionStorage.setItem('formOpen', '1');
+}
+function hasSharedFlag(){ return sessionStorage.getItem('botShared') === '1'; }
+function openForm(){
+  formContainer.classList.remove('hidden');
+  formContainer.setAttribute('aria-hidden', 'false');
+  sessionStorage.setItem('formOpen','1');
+}
+function closeForm(){
+  formContainer.classList.add('hidden');
+  formContainer.setAttribute('aria-hidden', 'true');
+  sessionStorage.removeItem('formOpen');
 }
 
-window.addEventListener("load", () => {
-  setTimeout(() => {
-    showAd();
-    setInterval(showAd, 40000);
-  }, 3000);
+/* If form was previously opened, keep it open */
+if(sessionStorage.getItem('formOpen') === '1'){
+  openForm();
+}
+
+/* WHATSAPP BUTTON: open link and mark shared */
+waBtn.addEventListener('click', () => {
+  // show ad on click
+  safeShowAd();
+
+  // open WhatsApp share - open in new tab/window
+  window.open(WHATSAPP_LINK, '_blank', 'noopener');
+
+  // set flag (we can't verify they actually posted - we rely on user honesty)
+  setSharedFlag();
+  openForm();
+  showPopup('Thank you — please complete the form below.', 'success', false);
 });
 
-/* SUBMIT PRODUCT */
-submitBtn.onclick = () => {
-  showAd();
+/* Show ad whenever any button is clicked (to match requirement) */
+document.querySelectorAll('button').forEach(b => {
+  b.addEventListener('click', () => {
+    // small debounce so clicks in quick succession don't spam
+    safeShowAd();
+  });
+});
 
-  const name = productName.value;
-  const img = hostedImage.value;
-  const url = productUrl.value;
-  const price = productPrice.value;
-  const currency = currency.value;
-  const desc = description.value;
-  const contact = contactInfo.value;
+/* Local image preview (optional) */
+localImage.addEventListener('change', () => {
+  const f = localImage.files && localImage.files[0];
+  if(!f) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    // show preview in a small popup (non-blocking)
+    showPopup(`<img src="${fr.result}" style="max-width:100%;border-radius:8px">`, null, true, 5000);
+  };
+  fr.readAsDataURL(f);
+});
 
-  const productId = "P" + Date.now();
-  const dt = new Date().toLocaleString("en-GB", { timeZone: "Africa/Lagos" });
+/* Status helper */
+function setStatus(text,type){
+  statusMsg.textContent = text;
+  statusMsg.classList.remove('hidden');
+  statusMsg.style.color = (type === 'success') ? 'var(--success)' : (type === 'error') ? 'var(--error)' : 'var(--warning)';
+}
 
-  const adminMessage = `
-📦 New Product Submitted
+/* POPUP CREATION: center modal, required close button. If 'sticky' true, user must click to close; else it auto-dismisses after timeout. */
+let popupTimeoutRef = null;
+function showPopup(message, type='success', sticky=false, timeout=5000){
+  // message: string (can be HTML)
+  // type: 'success'|'error'|null
+  // sticky: if true user must click OK to close
+  // timeout: milliseconds to auto-close if not sticky
+
+  // remove existing
+  const existing = document.getElementById('globalPopupOverlay');
+  if(existing) existing.remove();
+  if(popupTimeoutRef){ clearTimeout(popupTimeoutRef); popupTimeoutRef = null; }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'popupOverlay';
+  overlay.id = 'globalPopupOverlay';
+
+  const popup = document.createElement('div');
+  popup.className = 'popup';
+  if(type === 'success') popup.classList.add('success');
+  if(type === 'error') popup.classList.add('error');
+
+  const title = document.createElement('div');
+  title.className = 'title';
+  title.innerHTML = (type === 'success') ? 'Success' : (type === 'error') ? 'Error' : 'Notice';
+
+  const msg = document.createElement('div');
+  msg.className = 'msg';
+  msg.innerHTML = message;
+
+  const ok = document.createElement('button');
+  ok.className = 'ok';
+  ok.textContent = sticky ? 'Close' : 'OK';
+
+  ok.onclick = () => { overlay.remove(); };
+
+  popup.appendChild(title);
+  popup.appendChild(msg);
+  popup.appendChild(ok);
+  overlay.appendChild(popup);
+  document.body.appendChild(overlay);
+
+  if(!sticky){
+    popupTimeoutRef = setTimeout(()=> {
+      try{ overlay.remove(); } catch(e){}
+      popupTimeoutRef = null;
+    }, timeout);
+  }
+}
+
+/* VALIDATION BEFORE SUBMIT - all fields required (hostedImage required) */
+function validateForm(){
+  const missing = [];
+  if(!productName.value.trim()) missing.push('Product Name');
+  if(!hostedImage.value.trim()) missing.push('Hosted Image URL');
+  if(!productUrl.value.trim()) missing.push('Product URL');
+  if(!productPrice.value.trim()) missing.push('Price');
+  if(!currencyEl.value.trim()) missing.push('Currency');
+  if(!description.value.trim()) missing.push('Description');
+  if(!contactInfo.value.trim()) missing.push('Contact Info');
+
+  return missing;
+}
+
+/* SEND POPUP + status visual on submit result */
+function handleSubmitSuccess(productId){
+  setStatus(`✅ Submitted! Product ID: ${productId}`, 'success');
+  showPopup(`Product submitted successfully!<br>Product ID: <strong>${productId}</strong>`, 'success', true);
+  // clear storage and form fields
+  sessionStorage.removeItem('formOpen');
+  sessionStorage.removeItem('botShared');
+  sessionStorage.clear();
+  sellForm.reset();
+}
+function handleSubmitFailure(msg){
+  setStatus(`❌ Submission failed: ${msg}`, 'error');
+  showPopup(`Submission failed: ${msg}`, 'error', true);
+}
+
+/* TELEGRAM MESSAGE SENDING (send to admin and notify seller) */
+function sendTelegramMessages(adminText, sellerText){
+  // send to admin first then to seller (return promise)
+  const send = (chat_id, text) => fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify({ chat_id: String(chat_id), text, parse_mode: 'HTML' })
+  }).then(r => r.json());
+
+  return send(ADMIN_ID, adminText).then(adminRes => {
+    if(!adminRes || !adminRes.ok) return Promise.reject(new Error('Failed to notify admin.'));
+    // notify seller (if they have an id)
+    if(tgUser && tgUser.id){
+      return send(tgUser.id, sellerText).then(sellerRes => {
+        // even if seller notification fails, treat admin ok as success
+        return { adminRes, sellerRes };
+      });
+    }
+    return { adminRes, sellerRes: null };
+  });
+}
+
+/* SUBMIT HANDLER */
+submitBtn.addEventListener('click', async () => {
+  // must have shared flag
+  if(!hasSharedFlag()){
+    showPopup('You must share the bot link on WhatsApp before submitting.', 'error', true);
+    setStatus('You must share the bot link before submitting.', 'error');
+    return;
+  }
+
+  safeShowAd();
+
+  const missing = validateForm();
+  if(missing.length){
+    const list = missing.join(', ');
+    showPopup(`Please complete required fields:<br><strong>${list}</strong>`, 'error', true);
+    setStatus('Please complete required fields.', 'error');
+    return;
+  }
+
+  // gather
+  const name = productName.value.trim();
+  const img = hostedImage.value.trim();
+  const url = productUrl.value.trim();
+  const price = productPrice.value.trim();
+  const currency = currencyEl.value.trim();
+  const desc = description.value.trim();
+  const contact = contactInfo.value.trim();
+
+  const productId = 'P' + Date.now();
+  const dt = new Date().toLocaleString('en-GB', { timeZone: 'Africa/Lagos' });
+
+  const adminMessage =
+`📦 <b>New Product Submitted</b>
 Product ID: ${productId}
-Name: ${name}
-Price: ${price} ${currency}
-Image: ${img}
-URL: ${url}
-Description: ${desc}
-Contact: ${contact}
-Seller: ${tgUser.first_name} @${tgUser.username}
-Seller ID: ${tgUser.id}
+Name: ${escapeHtml(name)}
+Price: ${escapeHtml(price)} ${escapeHtml(currency)}
+Image: ${escapeHtml(img)}
+URL: ${escapeHtml(url)}
+Description: ${escapeHtml(desc)}
+Contact: ${escapeHtml(contact)}
+Seller: ${escapeHtml(tgUser.first_name || '')} ${tgUser.username ? ' @' + escapeHtml(tgUser.username) : ''}
+Seller ID: ${tgUser.id || 'N/A'}
 Date & Time: ${dt}
 `;
 
-  const sellerMessage = `
-✅ Your product was submitted!
-Name: ${name}
+  const sellerMessage = 
+`✅ <b>Your product was submitted!</b>
+Name: ${escapeHtml(name)}
 Product ID: ${productId}
 `;
 
-  statusMsg.textContent = "Submitting product...";
-  statusMsg.classList.remove("hidden");
-  statusMsg.style.color = "orange";
+  setStatus('Submitting product...', 'warning');
 
-  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ chat_id: ADMIN_ID, text: adminMessage })
-  })
-  .then(r => r.json())
-  .then(res => {
-    if(res.ok){
-      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ chat_id: tgUser.id, text: sellerMessage })
-      });
-
-      statusMsg.textContent = `✅ Submitted! Product ID: ${productId}`;
-      statusMsg.style.color = "green";
-
-      sessionStorage.clear();
-      document.querySelectorAll("input, textarea").forEach(i => i.value="");
-
+  try{
+    const res = await sendTelegramMessages(adminMessage, sellerMessage);
+    // check admin response ok
+    if(res && res.adminRes && res.adminRes.ok){
+      handleSubmitSuccess(productId);
     } else {
-      statusMsg.textContent = "❌ Submission failed.";
-      statusMsg.style.color = "red";
+      throw new Error('Telegram returned an error.');
     }
-  });
-};
+  } catch(err){
+    console.error('Submit error', err);
+    handleSubmitFailure(err.message || 'Network or Telegram error.');
+  }
+});
+
+/* Simple html-escape */
+function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ----- MONETAG ADS SCHEDULING ----- */
+/* We'll call the provided show_9830606() if available. Use a safe wrapper and debounce to avoid spamming. */
+let adDebounce = false;
+function safeShowAd(){
+  // if already showing in the last 1s, skip
+  if(adDebounce) return;
+  adDebounce = true;
+  setTimeout(()=> adDebounce = false, 1000);
+
+  // attempt to call SDK function
+  try{
+    if(typeof window.show_9830606 === 'function') {
+      window.show_9830606();
+    } else {
+      // fallback: try to call any global function named show_9830606 (some SDKs attach differently)
+      const fn = window['show_9830606'] || window['show_9830606'];
+      if(typeof fn === 'function') fn();
+      // else nothing we can do — SDK file may still load later; attempt again shortly
+      else setTimeout(()=> { if(typeof window.show_9830606 === 'function') window.show_9830606(); }, 500);
+    }
+  } catch(e){
+    console.warn('Ad show error', e);
+  }
+}
+
+/* initial ad after 3 seconds, then every 30 seconds */
+window.addEventListener('load', () => {
+  setTimeout(()=> {
+    safeShowAd();
+    // schedule every 30s (30000ms)
+    window._monetagInterval = setInterval(() => safeShowAd(), 30000);
+  }, 3000);
+});
+
+/* ----- small utility nav buttons behavior ----- */
+document.getElementById('reloadBtn').addEventListener('click', () => {
+  // this is supposed to navigate the user to 'Sell Account' flow - for now we reload
+  safeShowAd();
+  // keep form open on reload by keeping formOpen flag
+  sessionStorage.setItem('formOpen','1');
+  location.reload();
+});
+document.getElementById('marketBtn').addEventListener('click', () => {
+  safeShowAd();
+  // navigate to marketplace (Telegram bot link)
+  window.open('https://t.me/intelligentmarketbot/marketplace', '_blank', 'noopener');
+});
+
+/* ----- utility: show a small non-blocking notice if they open the form without sharing (defensive) ----- */
+if(sessionStorage.getItem('formOpen') === '1' && !hasSharedFlag()){
+  showPopup('You opened the form previously. Please share the bot link on WhatsApp before submitting.', null, false, 6000);
+}
+
+/* ----- safety / fallback: if user closes or reloads, preserve some fields — already handled by sessionStorage above ----- */
+
 </script>
 </body>
 </html>
