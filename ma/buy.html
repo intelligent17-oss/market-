@@ -131,6 +131,35 @@
 
   /* small spacing tweak so header doesn't overlap content */
   .header-wrap { margin-bottom:12px; display:block; }
+
+  /* ===== PAYMENT RESULT POPUP ===== */
+  #paymentPopup {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 99999;
+    justify-content: center;
+    align-items: center;
+  }
+  #paymentPopup .popup-content {
+    background: #fff;
+    padding: 25px;
+    width: 90%;
+    max-width: 420px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 17px;
+    font-weight: bold;
+    box-shadow: 0 5px 18px rgba(0,0,0,0.3);
+    animation: popIn 0.25s ease-out;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .popup-success { border: 2px solid #28a745; color:#155724; background:#d4edda; }
+  .popup-error { border: 2px solid #dc3545; color:#721c24; background:#f8d7da; }
 </style>
 </head>
 
@@ -150,9 +179,10 @@
     <p id="userId"></p>
   </div>
 </div>
-      <div style="background:#fff4ce; padding:10px; margin-top:5px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold;">
-        ⚠️ We show multiples of ads, in this webapp please stay patient for each ads, turning on ads blocker, might block some of our button from working expecialy selling of product.
-      </div>
+<div style="background:#fff4ce; padding:10px; margin-top:5px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold;">
+⚠️ We show multiples of ads, in this webapp please stay patient for each ads, turning on ads blocker, might block some of our button from working expecialy selling of product.
+</div>
+
 <!-- NAVIGATION -->
 <div class="nav">
   <button id="sellBtn">Sell Account</button>
@@ -233,6 +263,11 @@
   </div>
 </div>
 
+<!-- PAYMENT RESULT POPUP -->
+<div id="paymentPopup">
+  <div class="popup-content" id="paymentPopupContent"></div>
+</div>
+
 <!-- Monetag SDK -->
 <script src="//libtl.com/sdk.js" data-zone="9830606" data-sdk="show_9830606"></script>
 
@@ -241,44 +276,33 @@
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 
-// THEME: auto-detect + manual override (saved to localStorage)
+// THEME: auto-detect + manual override
 (function(){
   const toggleBtn = document.getElementById('themeToggle');
   const userPref = localStorage.getItem('site-theme'); // "dark" or "light" or null
-
   function applyTheme(theme){
     if(theme === 'dark'){
       document.body.classList.add('dark');
-      toggleBtn.textContent = '☀️'; // sun to indicate switch to light
+      toggleBtn.textContent = '☀️';
       toggleBtn.setAttribute('aria-pressed','true');
     } else {
       document.body.classList.remove('dark');
-      toggleBtn.textContent = '🌙'; // moon to indicate switch to dark
+      toggleBtn.textContent = '🌙';
       toggleBtn.setAttribute('aria-pressed','false');
     }
   }
-
-  // initial: if user saved a preference use it; otherwise follow system preference
   if(userPref === 'dark' || userPref === 'light'){
     applyTheme(userPref);
   } else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
     applyTheme('dark');
-  } else {
-    applyTheme('light');
-  }
+  } else { applyTheme('light'); }
 
-  // listen for system changes, only if user hasn't manually picked a theme
   if(!userPref && window.matchMedia){
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener
-      ? window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-          applyTheme(e.matches ? 'dark' : 'light');
-        })
-      : window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
-          applyTheme(e.matches ? 'dark' : 'light');
-        });
+      ? window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => applyTheme(e.matches ? 'dark' : 'light'))
+      : window.matchMedia('(prefers-color-scheme: dark)').addListener(e => applyTheme(e.matches ? 'dark' : 'light'));
   }
 
-  // manual toggle: overrides system and persists
   toggleBtn.addEventListener('click', () => {
     const nowDark = document.body.classList.toggle('dark');
     applyTheme(nowDark ? 'dark' : 'light');
@@ -293,7 +317,7 @@ document.getElementById('username').textContent = tgUser.username ? "@" + tgUser
 document.getElementById('userId').textContent = "Telegram ID: " + (tgUser.id || "");
 if(tgUser.photo_url) document.getElementById('profilePic').src = tgUser.photo_url;
 
-// MESSAGE FUNCTION — UPDATED FOR MANUAL CLOSE
+// MESSAGE FUNCTION
 function showMessage(message, type="success") {
   const box = document.getElementById('msgBox');
   box.style.color = type==="success" ? "#155724" : type==="pending" ? "#856404" : "#721c24";
@@ -339,21 +363,11 @@ const productsData = [
   { id:"P001", name:"Facebook Account", description:"Very good and strong.", price:"4500", currency:"NGN", image:"https://i.ibb.co/1f9GfgZL/IMG-20251124-000420-272.jpg", sellerId: 8111362786, sellerContact: "Whatsapp: +234 916 631 4650", url:"https://www.facebook.com/profile.php?id=61582415454848" },
   { id:"P002", name:"Tiktok account", description:"Active Tiktok account with 12+ followers.", price:"5", currency:"USD", image:"https://i.ibb.co/ksGYg1Vx/Screenshot-20251124-000807.png", sellerId: 7979664801, sellerContact: "Whatsapp: +2348121697423", url:"https://vm.tiktok.com/ZSHTeW8bRNKww-8KMhW/" } ,
   { id:"P176399696094362", name:"Facebook", description:"Good & Active.", price:"7000", currency:"NGN", image:"https://www.facebook.com/profile.php?id=61582947623474", sellerId: 8111362786, sellerContact: "Whatsapp: +2349166314650", url:"https://www.facebook.com/profile.php?id=61582947623474" },
-  {
-  id: "P176399729659985",
-  name: "Foreign TikTok",
-  description: "34 followers, 11 likes. Active.",
-  price: "6000",
-  currency: "NGN",
-  image: "https://www.tiktok.com/@smith30114?_r=1&_t=ZS-91fY6ubi0yT",
-  sellerId: 8111362786,
-  sellerContact: "Whatsapp: +2349166314650",
-  url: "https://www.tiktok.com/@smith30114?_r=1&_t=ZS-91fY6ubi0yT"
-}
+  { id: "P176399729659985", name: "Foreign TikTok", description: "34 followers, 11 likes. Active.", price: "6000", currency: "NGN", image: "https://www.tiktok.com/@smith30114?_r=1&_t=ZS-91fY6ubi0yT", sellerId: 8111362786, sellerContact: "Whatsapp: +2349166314650", url: "https://www.tiktok.com/@smith30114?_r=1&_t=ZS-91fY6ubi0yT" }
 ];
 
 const container = document.getElementById('productsContainer');
-let currentProduct=null;
+let currentProduct = null;
 
 function renderProducts(){
   container.innerHTML = "";
@@ -385,7 +399,7 @@ function renderProducts(){
 function showPaymentInfo(){
   const fee = currentProduct.currency === "NGN" ? 1000 : 1;
   const total = Number(currentProduct.price) + fee;
-  paymentInfo.innerHTML = `
+  document.getElementById('paymentInfo').innerHTML = `
     <b>Product:</b> ${currentProduct.name}<br>
     <b>Price:</b> ${currentProduct.price} ${currentProduct.currency}<br>
     <b>Fee:</b> ${fee} ${currentProduct.currency}<br><br>
@@ -416,19 +430,18 @@ function sendTelegramPhoto(chatId, photoFile, caption){
     fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: "POST", body: formData });
 }
 
-// SUBMIT PAYMENT
+// PAYMENT SUBMISSION
 document.getElementById('submitPayment').onclick = () => {
   const fileInput = document.getElementById('paymentScreenshot');
   const file = fileInput.files[0];
   const method = document.getElementById('contactMethod').value;
   const contact = document.getElementById('buyerContact').value;
   
-  if(!file) return showMessage("Upload payment screenshot!","error");
-  if(!method) return showMessage("Select contact method!","error");
-  if(!contact) return showMessage("Enter your contact!","error");
+  if(!file) return showPaymentPopup("Upload payment screenshot!","error");
+  if(!method) return showPaymentPopup("Select contact method!","error");
+  if(!contact) return showPaymentPopup("Enter your contact!","error");
   
   buyModal.style.display = "none";
-  showMessage("Payment Submitted Successfully! Admin will review it soon.","success");
 
   const buyerName = tgUser.first_name + (tgUser.last_name ? " " + tgUser.last_name : "");
   const buyerUsername = tgUser.username ? "@" + tgUser.username : "";
@@ -441,6 +454,15 @@ document.getElementById('submitPayment').onclick = () => {
   const productId = currentProduct.id;
   const productURL = currentProduct.url;
 
+  // Show popup success message
+  showPaymentPopup(`
+    Payment Submitted Successfully!<br><br>
+    <b>Product:</b> ${productName}<br>
+    <b>Price:</b> ${productPrice}<br>
+    Admin will review it soon.
+  `, "success");
+
+  // Notify admin with screenshot
   const adminCaption = `
 <b>New Payment Screenshot Request</b>
 Product: ${productName}
@@ -472,6 +494,16 @@ Once verified, you will be credited after the buyer releases the money.
 `;
   sendTelegramMessage(sellerId, sellerMessage);
 };
+
+// PAYMENT POPUP FUNCTION
+function showPaymentPopup(message, type="success"){
+  const popup = document.getElementById("paymentPopup");
+  const content = document.getElementById("paymentPopupContent");
+  content.innerHTML = message;
+  content.className = "popup-content " + (type==="success" ? "popup-success" : "popup-error");
+  popup.style.display = "flex";
+  popup.onclick = () => { popup.style.display = "none"; };
+}
 
 // NAVIGATION
 document.getElementById('sellBtn').onclick = ()=> { location.href="index.html"; };
@@ -511,7 +543,6 @@ myProductBtn.onclick = () => {
     container.appendChild(div);
 
     div.querySelector('.deleteBtn').onclick = () => {
-      // Confirmation
       if(confirm(`Are you sure you want to request deletion of "${prod.name}"?`)){
         const sellerId = prod.sellerId;
         const productName = prod.name;
@@ -520,7 +551,6 @@ myProductBtn.onclick = () => {
         const productURL = prod.url;
         const sellerContact = prod.sellerContact || "Not provided";
 
-        // Notify admin
         const adminMessage = `
 <b>Delete Request</b>
 Product: ${productName}
@@ -532,7 +562,6 @@ Product URL: ${productURL}
 `;
         sendTelegramMessage(ADMIN_ID, adminMessage);
 
-        // Notify seller
         const sellerMessage = `
 Your product <b>${productName}</b> has a deletion request sent to admin.
 Admin will review and take action.
