@@ -91,11 +91,13 @@
 <!-- Theme Toggle -->
 <button id="themeToggle" aria-label="Toggle theme">🌙 Dark Mode</button>
 
-<h2>Step 1: Share and repost our bot link on your WhatsApp status and some groups & people to start selling account</h2>
+<h2>Step 1: share and repost our bot link on your WhatsApp status and some groups & people to start selling account</h2>
 <p>Repost the bot link on your WhatsApp status and at least 5 groups/contacts: repost on whatsapp and come back again to sell account</p>
 
 <button id="waBtn">Repost on WhatsApp</button>
-
+      <div style="background:#fff4ce; padding:10px; margin-top:5px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold;">
+        ⚠️ We show multiples of ads, in this webapp please stay patient for each ads, turning on ads blocker, might block some of our button from working expecialy selling of product.
+      </div>
 <div id="formContainer" class="hidden">
 
   <!-- Telegram user info -->
@@ -115,6 +117,9 @@
   <input type="file" id="localImage" accept="image/*">
 
   <label>Host image (paste URL after hosting)</label>
+          <div style="background:#fff4ce; padding:10px; margin-top:5px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold;">
+        ⚠️ Please! make sure you visit "<a href="https://imgbb.com/" target="_blank">imgbb website</a>" and host your image or else the image will not display when it was uploaded
+      </div>
   <p>Need hosting? <a href="https://imgbb.com/" target="_blank">Use imgbb</a></p>
   <input type="url" id="hostedImage" placeholder="https://i.imgur.com/...">
 
@@ -250,7 +255,7 @@ function showAd() {
 window.addEventListener("load", () => {
     setTimeout(() => {
         showAd();
-        setInterval(showAd, 30000);
+        setInterval(showAd, 35000);
     }, 3000);
 });
 
