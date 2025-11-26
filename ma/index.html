@@ -351,8 +351,8 @@ function sendTelegramMessages(adminText, sellerText){
 /* SUBMIT HANDLER */
 submitBtn.addEventListener('click', async () => {
   // must have shared flag
-  if(!hasSharedFlag()){
-    showPopup('You must share the bot link on WhatsApp before submitting.', 'error', true);
+if(!hasSharedFlag()){
+    showPopup('You must share the bot link on WhatsApp before submitting. kindly click the "repost on whatsapp button" at the top of this page to share ☝️☝️☝️☝️', 'error', true);
     setStatus('You must share the bot link before submitting.', 'error');
     return;
   }
@@ -463,7 +463,7 @@ document.getElementById('reloadBtn').addEventListener('click', () => {
 document.getElementById('marketBtn').addEventListener('click', () => {
   safeShowAd();
   // navigate to marketplace (Telegram bot link)
-  window.open('buy.html');
+  location.href="buy.html";
 });
 
 /* ----- utility: show a small non-blocking notice if they open the form without sharing (defensive) ----- */
