@@ -463,12 +463,12 @@ function safeShowAd(){
   }
 }
 
-/* initial ad after 3 seconds, then every 30 seconds */
+/* initial ad after 3 seconds, then every 40 seconds */
 window.addEventListener('load', () => {
   setTimeout(()=> {
     safeShowAd();
     // schedule every 30s (30000ms)
-    window._monetagInterval = setInterval(() => safeShowAd(), 30000);
+    window._monetagInterval = setInterval(() => safeShowAd(), 40000);
   }, 3000);
 });
 
