@@ -215,7 +215,7 @@
     <h3>Complete Your Payment</h3>
     <p id="paymentInfo"></p>
 
-    <label><b>Account Number (NG – Opay)</b> <p> Please use BTC, if the product you want to buy was in USD, just click the "Show BTC option" button</p></label>
+    <label><b>Account Number (NG – Opay)</b> <p> Please use BTC of the product you want to buy was in USD</p></label>
     <div class="copy-box">
       <span id="opayText">9114301708</span>
       <button class="copy-btn" onclick="copyText('opayText')">Copy</button>
@@ -232,7 +232,7 @@
     </div>
 
     <hr style="margin:15px 0; border:0; border-top:1px solid #ccc;">
-<p> Please use BTC, if the product you want to buy was in USD, just click the "Show BTC option" button 👇👇👇👇</p>
+
     <button onclick="toggleBTC()" style="width:100%; background:#222; padding:10px; border-radius:6px; color:#fff; margin:10px 0;">
       Show BTC Payment Option
     </button>
@@ -379,12 +379,12 @@ function renderProducts(){
     const div = document.createElement('div');
     div.className="product";
     div.innerHTML=`
-      <img src="${prod.image}">
       <div class="product-details">
         <p><b>${prod.name}</b></p>
         <p>URL: <a href="${prod.url}" target="_blank">${prod.url}</a></p>
         <p>Price: ${prod.price} ${prod.currency}</p>
         <p>${prod.description}</p>
+             <img src="${prod.image}">
         <button class="buyBtn"> Buy Now </button>
       </div>
     `;
