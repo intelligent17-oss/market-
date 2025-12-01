@@ -219,20 +219,20 @@ async function openGroupChat(group, index) {
   currentGroupIndex = index;
   const container = el("contentContainer");
   if (!container) return;
-
-  container.innerHTML = `
-    <div class="chat-header">
-      <div class="chat-title">${group.name}</div>
-      <div class="chat-sub">${group.premium ? "Hot • Premium" : "Public"}</div>
+container.innerHTML = `
+  <div class="chat-header">
+    <div class="chat-header-left">
+      <button id="joinBtn" class="leave-btn">${userHasJoined(getGroupId(group)) ? "Leave Group" : "Join Group"}</button>
+      <span class="chat-group-name">${group.name}</span>
     </div>
-    <div class="messages" id="messages"></div>
-    <div class="send-box">
-      <input id="msgInput" placeholder="Type a message..." />
-      <button id="sendBtn" class="btn">Send</button>
-      <button id="joinBtn" class="btn outline">${userHasJoined(getGroupId(group)) ? "Leave Group" : "Join Group"}</button>
-    </div>
-  `;
-
+    <div class="chat-sub">${group.premium ? "Hot • Premium" : "Public"}</div>
+  </div>
+  <div class="messages" id="messages"></div>
+  <div class="send-box">
+    <input id="msgInput" placeholder="Type a message..." />
+    <button id="sendBtn" class="btn">Send</button>
+  </div>
+`;
   const messagesDiv = el("messages");
   const sendBtn = el("sendBtn");
   const joinBtn = el("joinBtn");
