@@ -1,0 +1,253 @@
+/* =======================
+   GENERAL STYLES
+======================= */
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f7f7f7;
+  color: #111;
+}
+
+.dark {
+  background: #1e1e1e;
+  color: #e6eef8;
+}
+
+/* =======================
+   HEADER
+======================= */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.dark .header {
+  background: #2b2b2b;
+}
+
+/* =======================
+   USER INFO
+======================= */
+#userInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #fff;
+}
+
+#userInfo img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.dark #userInfo {
+  background: #2b2b2b;
+}
+
+/* =======================
+   NAVIGATION
+======================= */
+.nav {
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  background: #fff;
+}
+
+.nav button {
+  flex: 1;
+  padding: 12px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.nav button.active {
+  font-weight: bold;
+  border-bottom: 3px solid #1a73e8;
+}
+
+.dark .nav {
+  background: #2b2b2b;
+  border-color: #444;
+}
+
+.dark .nav button.active {
+  border-color: #66a6ff;
+}
+
+/* =======================
+   CONTENT CONTAINER
+======================= */
+#contentContainer {
+  padding: 12px 16px;
+  min-height: 70vh;
+  overflow-y: auto;
+}
+
+/* =======================
+   GROUP LIST / MESSAGES
+======================= */
+.group-card {
+  background: #fff;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  cursor: pointer;
+}
+
+.dark .group-card {
+  background: #2b2b2b;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.group-name {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.group-members {
+  font-size: 13px;
+  color: #555;
+}
+
+.dark .group-members {
+  color: #ccc;
+}
+
+/* =======================
+   GROUP CHAT VIEW
+======================= */
+.chat-header {
+  padding: 12px;
+  font-weight: bold;
+  font-size: 18px;
+  border-bottom: 1px solid #ccc;
+  background: #f7f7f7;
+}
+
+.dark .chat-header {
+  background: #2b2b2b;
+  border-color: #444;
+}
+
+.messages {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* MESSAGE BUBBLES */
+.message {
+  max-width: 70%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  word-wrap: break-word;
+}
+
+.message.user {
+  background: #1a73e8;
+  color: #fff;
+  align-self: flex-end;
+}
+
+.message.other {
+  background: #e5e5ea;
+  color: #111;
+  align-self: flex-start;
+}
+
+.dark .message.other {
+  background: #3a3a3a;
+  color: #e6eef8;
+}
+
+/* =======================
+   SEND MESSAGE BOX
+======================= */
+.send-box {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+  border-top: 1px solid #ccc;
+  background: #fff;
+}
+
+.send-box input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+}
+
+.send-box button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 20px;
+  background: #1a73e8;
+  color: #fff;
+  cursor: pointer;
+}
+
+.dark .send-box {
+  background: #2b2b2b;
+  border-color: #444;
+}
+
+/* =======================
+   SYSTEM MESSAGE BOX
+======================= */
+#msgBox {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #d4edda;
+  color: #155724;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  cursor: pointer;
+  z-index: 9999;
+}
+
+#msgBox.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* =======================
+   SCROLLBAR STYLE
+======================= */
+#contentContainer::-webkit-scrollbar,
+.messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+#contentContainer::-webkit-scrollbar-thumb,
+.messages::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.dark #contentContainer::-webkit-scrollbar-thumb,
+.dark .messages::-webkit-scrollbar-thumb {
+  background: #555;
+}
