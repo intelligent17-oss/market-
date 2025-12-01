@@ -7,6 +7,7 @@ body {
   padding: 0;
   background: #f7f7f7;
   color: #111;
+  transition: background 0.3s, color 0.3s;
 }
 
 .dark {
@@ -24,6 +25,7 @@ body {
   padding: 12px 16px;
   background: #fff;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: background 0.3s;
 }
 
 .dark .header {
@@ -39,6 +41,7 @@ body {
   gap: 12px;
   padding: 12px 16px;
   background: #fff;
+  transition: background 0.3s;
 }
 
 #userInfo img {
@@ -46,6 +49,11 @@ body {
   height: 60px;
   border-radius: 50%;
   object-fit: cover;
+  transition: transform 0.3s;
+}
+
+#userInfo img:hover {
+  transform: scale(1.05);
 }
 
 .dark #userInfo {
@@ -61,6 +69,7 @@ body {
   border-top: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
   background: #fff;
+  transition: background 0.3s, border-color 0.3s;
 }
 
 .nav button {
@@ -70,6 +79,12 @@ body {
   background: none;
   cursor: pointer;
   font-size: 16px;
+  transition: all 0.3s;
+}
+
+.nav button:hover {
+  background: rgba(26,115,232,0.1);
+  border-radius: 10px;
 }
 
 .nav button.active {
@@ -93,10 +108,11 @@ body {
   padding: 12px 16px;
   min-height: 70vh;
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 /* =======================
-   GROUP LIST / MESSAGES
+   GROUP LIST / CARDS
 ======================= */
 .group-card {
   background: #fff;
@@ -105,6 +121,15 @@ body {
   margin-bottom: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
   cursor: pointer;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.5s forwards;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.group-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .dark .group-card {
@@ -136,6 +161,7 @@ body {
   font-size: 18px;
   border-bottom: 1px solid #ccc;
   background: #f7f7f7;
+  transition: background 0.3s, border-color 0.3s;
 }
 
 .dark .chat-header {
@@ -150,31 +176,56 @@ body {
   gap: 8px;
   max-height: 60vh;
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
-/* MESSAGE BUBBLES */
+/* =======================
+   MESSAGE BUBBLES
+======================= */
 .message {
   max-width: 70%;
-  padding: 10px 12px;
+  padding: 10px 14px;
+  margin: 5px 10px;
   border-radius: 16px;
   word-wrap: break-word;
+  clear: both;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: bubbleFade 0.4s forwards;
+  transition: background 0.3s, color 0.3s;
 }
 
+/* CURRENT USER MESSAGE */
 .message.user {
-  background: #1a73e8;
-  color: #fff;
+  background: #b2f5b2; /* light green */
+  color: #111;
   align-self: flex-end;
+  float: right;
+  text-align: right;
 }
 
+/* OTHER PEOPLE MESSAGE */
 .message.other {
-  background: #e5e5ea;
+  background: #ffffff;
   color: #111;
   align-self: flex-start;
+  float: left;
+  text-align: left;
 }
 
 .dark .message.other {
   background: #3a3a3a;
   color: #e6eef8;
+}
+
+/* SYSTEM MESSAGE */
+.message.system {
+  background-color: #ffeeba;
+  text-align: center;
+  margin: 5px auto;
+  border-radius: 10px;
+  max-width: 80%;
+  clear: both;
 }
 
 /* =======================
@@ -186,6 +237,7 @@ body {
   padding: 8px 16px;
   border-top: 1px solid #ccc;
   background: #fff;
+  transition: background 0.3s, border-color 0.3s;
 }
 
 .send-box input {
@@ -193,6 +245,12 @@ body {
   padding: 10px 12px;
   border-radius: 20px;
   border: 1px solid #ccc;
+  transition: border-color 0.3s;
+}
+
+.send-box input:focus {
+  border-color: #1a73e8;
+  outline: none;
 }
 
 .send-box button {
@@ -202,6 +260,12 @@ body {
   background: #1a73e8;
   color: #fff;
   cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.send-box button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(26,115,232,0.4);
 }
 
 .dark .send-box {
@@ -210,14 +274,14 @@ body {
 }
 
 /* =======================
-   SYSTEM MESSAGE BOX
+   SYSTEM MESSAGE BOX (TOAST)
 ======================= */
 #msgBox {
   display: none;
   position: fixed;
   top: 16px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(-20px);
   background: #d4edda;
   color: #155724;
   padding: 12px 20px;
@@ -226,6 +290,8 @@ body {
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   cursor: pointer;
   z-index: 9999;
+  opacity: 0;
+  animation: toastIn 0.5s forwards;
 }
 
 #msgBox.error {
@@ -251,28 +317,66 @@ body {
 .dark .messages::-webkit-scrollbar-thumb {
   background: #555;
 }
-.message { 
-  margin: 5px 10px; 
-  padding: 6px 10px; 
-  border-radius: 10px; 
-  max-width: 70%; 
-  clear: both; 
+
+/* =======================
+   ANIMATIONS
+======================= */
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.user-left { 
-  background-color: #f0f0f0; 
-  float: left; 
-  text-align: left;
+
+@keyframes bubbleFade {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.user-right { 
-  background-color: #d1e7dd; 
-  float: right; 
-  text-align: right;
+
+@keyframes toastIn {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-20px);}
+  100% { opacity: 1; transform: translateX(-50%) translateY(0);}
 }
-.system { 
-  background-color: #ffeeba; 
-  text-align: center; 
-  margin: 5px auto; 
-  border-radius: 5px; 
-  max-width: 80%; 
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #ccc;
+  background: #f7f7f7;
+  transition: background 0.3s, border-color 0.3s;
 }
-.messages { overflow-y: auto; }
+
+.dark .chat-header {
+  background: #2b2b2b;
+  border-color: #444;
+}
+
+.chat-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.leave-btn {
+  background: #ff4d4d;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.leave-btn:hover {
+  transform: scale(1.05);
+  background: #e04343;
+}
+
+.chat-group-name {
+  font-weight: bold;
+  font-size: 18px;
+}
