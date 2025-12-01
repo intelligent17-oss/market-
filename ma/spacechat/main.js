@@ -254,11 +254,13 @@ async function openGroupChat(group, index) {
       }
       if (Array.isArray(serverMsgs)) serverMsgs.forEach(m => all.push({ ...m, system: false }));
 
-      messagesDiv.innerHTML = all.map(m => `
-        <div class="message ${m.system ? "system" : "user"}">
-          <b>${m.fullName || m.username || "User"}:</b> ${linkify(m.message)}
-        </div>
-      `).join("");
+      const currentUserId = (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) ? tg.initDataUnsafe.user.id.toString() : "WEB_USER_001";
+
+messagesDiv.innerHTML = all.map(m => {
+  if (m.system) return `<div class="message system"><b>${m.fullName}:</b> ${linkify(m.message)}</div>`;
+  const isMe = m.userId && m.userId.toString() === currentUserId;
+  return `<div class="message ${isMe ? "user-right" : "user-left"}"><b>${m.fullName || m.username || "User"}:</b> ${linkify(m.message)}</div>`;
+}).join("");
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     } catch (err) {
       messagesDiv.innerHTML = `<div class="msg error">Failed to load messages.</div>`;
@@ -395,7 +397,7 @@ async function openGroupChat(group, index) {
     // append locally for immediate UX
     const user = (tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : {};
     const displayName = `${user.first_name || ""} ${user.last_name || ""}`.trim() || (user.username || "You");
-    messagesDiv.insertAdjacentHTML("beforeend", `<div class="message user"><b>${displayName}:</b> ${linkify(value)}</div>`);
+    messagesDiv.insertAdjacentHTML("beforeend", `<div class="message user-right"><b>${displayName}:</b> ${linkify(value)}</div>`);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
     // send to server
