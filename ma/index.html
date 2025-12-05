@@ -228,15 +228,20 @@ if(sessionStorage.getItem('formOpen') === '1'){
 
 /* WHATSAPP BUTTON: open link and mark shared */
 waBtn.addEventListener('click', () => {
-  // show ad on click
+  // show ad
   safeShowAd();
 
-  // open WhatsApp share - open in new tab/window
+  // open WhatsApp share window
   window.open(WHATSAPP_LINK, '_blank', 'noopener');
 
-  // set flag (we can't verify they actually posted - we rely on user honesty)
+  // save share flag
   setSharedFlag();
   openForm();
+
+  // SCROLL FORM UP SO USER SEES IT
+  formContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  // thank you popup
   showPopup('Thank you — please complete the form below.', 'success', false);
 });
 
