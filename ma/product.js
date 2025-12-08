@@ -1,5 +1,16 @@
 // PRODUCTS DATA
 const productsData = [
+{
+  id: "P1765163337840",
+  name: "15YEARS OLD TWITTER ACCOUNT",
+  description: "Old 15Years foreign Twitter",
+  price: "10000",
+  currency: "NGN",
+  image: "https://i.ibb.co/5hKyBM6Y/946f7fb0-2c40-475e-8daf-e1fe496f67c1.jpg",
+  sellerId: 7436021331,
+  sellerContact: "Whatsapp: +2349121412096",
+  url: "https://x.com/jemberoutlet?t=JU3B5yoEA4dCD0OvCfNAjQ&s=09"
+},
   {
   id: "P1764508470835",
   name: "Crypto & investment Telegram bot",
