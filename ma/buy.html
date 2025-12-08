@@ -173,6 +173,9 @@
   }
   .popup-success { border: 2px solid #28a745; color:#155724; background:#d4edda; }
   .popup-error { border: 2px solid #dc3545; color:#721c24; background:#f8d7da; }
+  .pname {
+    font-size: 20px;
+  }
 </style>
 </head>
 
@@ -380,11 +383,12 @@ function renderProducts(){
     div.className="product";
     div.innerHTML=`
       <div class="product-details">
-        <p><b>${prod.name}</b></p>
+        <p class="pname"><b>${prod.name}</b></p>
+        <br>
+     <img src="${prod.image}">
         <p>URL: <a href="${prod.url}" target="_blank">${prod.url}</a></p>
         <p>Price: ${prod.price} ${prod.currency}</p>
         <p>${prod.description}</p>
-             <img src="${prod.image}">
         <button class="buyBtn"> Buy Now </button>
       </div>
     `;
