@@ -1,6 +1,17 @@
 // PRODUCTS DATA
 const productsData = [
 {
+  id: "P1765166520546",
+  name: "7 YEARS OLD FOREIGN TIKTOK",
+  description: "Fresh Netherland old TikTok",
+  price: "6500",
+  currency: "NGN",
+  image: "https://i.ibb.co/XrwzFnQJ/IMG-9625.png",
+  sellerId: 7436021331,
+  sellerContact: "Whatsapp: +2349121412096",
+  url: "https://www.tiktok.com/@siemdegroot08?_r=1&_t=ZG-922ZRkNqBuL"
+},
+{
   id: "P1765163337840",
   name: "15YEARS OLD TWITTER ACCOUNT",
   description: "Old 15Years foreign Twitter",
