@@ -176,6 +176,198 @@
   .pname {
     font-size: 20px;
   }
+  /* ============================
+   GLOBAL SMOOTH SCROLL
+============================ */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ============================
+   PRODUCT ENTRY ANIMATION
+============================ */
+.product {
+  animation: productSlideUp 0.6s ease both;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+@keyframes productSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================
+   PRODUCT CLICK / FOCUS EFFECT
+============================ */
+.product:active,
+.product:focus-within {
+  transform: scale(1.03) translateY(-8px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.25);
+}
+
+/* ============================
+   IMAGE SOFT ZOOM ON TOUCH
+============================ */
+.product img {
+  transition: transform 0.4s ease;
+}
+
+.product:active img {
+  transform: scale(1.06);
+}
+
+/* ============================
+   BUTTON PRESS EFFECT
+============================ */
+button {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:active {
+  transform: scale(0.96);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2) inset;
+}
+
+/* ============================
+   BUY MODAL SLIDE-UP MOBILE STYLE
+============================ */
+#buyModal {
+  animation: fadeInBg 0.25s ease both;
+}
+
+#buyModal .modal-content {
+  animation: slideUpModal 0.35s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes slideUpModal {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInBg {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ============================
+   BTC SECTION SMOOTH TOGGLE
+============================ */
+#btcSection {
+  transition: all 0.35s ease;
+  overflow: hidden;
+}
+
+/* ============================
+   SUCCESS / ERROR POPUP BOOST
+============================ */
+#paymentPopup .popup-content {
+  animation: popBounce 0.35s ease both;
+}
+
+@keyframes popBounce {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ============================
+   MESSAGE BOX SLIDE FROM TOP
+============================ */
+#msgBox {
+  animation: msgSlide 0.4s ease both;
+}
+
+@keyframes msgSlide {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* ============================
+   NAV BUTTON FLOAT EFFECT
+============================ */
+.nav button {
+  transition: transform 0.3s ease;
+}
+
+.nav button:hover {
+  transform: translateY(-4px);
+}
+
+/* ============================
+   USER CARD FADE
+============================ */
+#userInfo {
+  animation: fadeUser 0.6s ease both;
+}
+
+@keyframes fadeUser {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================
+   COPY BOX PULSE FEEDBACK
+============================ */
+.copy-box:active {
+  animation: pulseCopy 0.35s ease;
+}
+
+@keyframes pulseCopy {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+/* ============================
+   AUTO SCROLL FOCUS ANIMATION
+============================ */
+.product.focused {
+  animation: focusZoom 0.5s ease;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+  transform: scale(1.05);
+  border: 2px solid #1a73e8;
+}
+
+@keyframes focusZoom {
+  from {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+/* ============================
+   SCROLL-UP REVEAL ANIMATION
+============================ */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(60px);
+  transition: all 0.7s ease;
+}
+
+.scroll-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
 </style>
 </head>
 
@@ -581,6 +773,51 @@ Admin will review and take action.
     };
   });
 };
+</script>
+<script>
+  // ===============================
+// AUTO SWIPE PAGE TO CLICKED PRODUCT
+// ===============================
+document.addEventListener("click", function(e) {
+  const product = e.target.closest(".product");
+  if (!product) return;
+
+  // Remove previous focus
+  document.querySelectorAll(".product").forEach(p => {
+    p.classList.remove("focused");
+  });
+
+  // Add focus to clicked product
+  product.classList.add("focused");
+
+  // Swipe page smoothly to the product
+  setTimeout(() => {
+    product.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }, 100);
+});
+</script>
+<script>
+/* ===============================
+   SCROLL-UP REVEAL ENGINE
+================================ */
+const revealElements = () => {
+  const elements = document.querySelectorAll(".scroll-reveal");
+
+  elements.forEach(el => {
+    const rect = el.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+
+    if (rect.top < windowHeight - 80) {
+      el.classList.add("visible");
+    }
+  });
+};
+
+window.addEventListener("scroll", revealElements);
+window.addEventListener("load", revealElements);
 </script>
 </body>
 </html>
