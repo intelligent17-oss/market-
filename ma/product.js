@@ -1,6 +1,17 @@
 // PRODUCTS DATA
 const productsData = [
 {
+  id: "P1765260605236",
+  name: "Tiktok account with 1k followers",
+  description: "5 years Tiktok with 1k+ followers",
+  price: "7000",
+  currency: "NGN",
+  image: "https://i.ibb.co/nNR9Vn62/Screenshot-20251209-070431.jpg",
+  sellerId: 6789580197,
+  sellerContact: "Whatsapp: 08139337058",
+  url: "https://www.tiktok.com/@tinofx12?_r=1&_t=ZS-924Qgm4OcAH"
+},
+{
   id: "P1765166520546",
   name: "7 YEARS OLD FOREIGN TIKTOK",
   description: "Fresh Netherland old TikTok",
