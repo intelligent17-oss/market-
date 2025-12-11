@@ -596,7 +596,24 @@ function startTimer() {
 // SHOW MODAL WITH TIMER
 function openBuyModal() { timeLeft=300; startTimer(); buyModal.style.display="flex"; }
 const buyModal = document.getElementById('buyModal');
-document.getElementById('closeModal').onclick = ()=> buyModal.style.display="none";
+document.getElementById('closeModal').onclick = () => {
+    buyModal.style.display = "none";
+
+    // 🔥 RESET EVERYTHING WHEN USER CANCELS
+    selectedMethod = null;
+    currentProduct = null;
+
+    // Reset payment pages:
+    document.getElementById("choosePayMethod").style.display = "block";
+    document.getElementById("paymentDetailsPage").style.display = "none";
+    document.getElementById("ngnDetails").style.display = "none";
+    document.getElementById("usdDetails").style.display = "none";
+
+    // Clear inputs
+    document.getElementById("paymentScreenshot").value = "";
+    document.getElementById("contactMethod").value = "";
+    document.getElementById("buyerContact").value = "";
+};
 const container = document.getElementById('productsContainer');
 let selectedMethod = null;
 // =============================================
