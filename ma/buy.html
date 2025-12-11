@@ -12,7 +12,13 @@
   }
   h2,h3 { margin-bottom:10px; }
   .product { background:#fff; padding:15px; margin:15px 0; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.05); }
-  .product img { width:100%; max-width:300px; border-radius:6px; display:block; margin-bottom:10px; }
+.product img {
+    width: 180px;         /* fixed nice size */
+    max-width: 90%;       /* responsive on small screens */
+    display: block;
+    margin: 10px auto;    /* centers the image */
+    border-radius: 6px;
+}
   .product-details p { margin:5px 0; }
   button { padding:10px; margin:5px 0; cursor:pointer; border:none; border-radius:6px; background:#000; color:#fff; }
 
@@ -390,7 +396,7 @@ button:active {
 <div style="background:#fff4ce; padding:10px; margin-top:5px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold;">
 ⚠️ We show multiples of ads, in this webapp please stay patient for each ads, turning on ads blocker, might block some of our button from working expecialy selling of product.
 </div>
-  <p>Please make sure you  <a href="https://t.me/intelligentmarketbot?start=ar1810544353" target="_blank">start our bot </a> before you buy any product so that you will receive notification about the seller contact, release or refunds of any money and many more.... <a href="https://t.me/intelligentmarketbot?start=ar1810544353" target="_blank">start bot</a></p>
+  <p>Please make sure you  <a href="https://t.me/intelligentmarketbot?start=ar1810544353">start our bot </a> before you buy any product so that you will receive notification about the seller contact, release or refunds of any money and many more.... <a href="https://t.me/intelligentmarketbot?start=ar1810544353">start bot</a></p>
 <!-- NAVIGATION -->
 <div class="nav">
   <button id="sellBtn" class="nnbb">Sell Account</button>
@@ -409,65 +415,74 @@ button:active {
   <div class="modal-content">
     <h3>Complete Your Payment</h3>
     <p id="paymentInfo"></p>
+<!-- NEW PAYMENT METHOD SELECTION PAGE -->
+<div id="choosePayMethod">
+  <h3>Select Payment Method</h3>
 
-    <label><b>Account Number (NG – Opay)</b> <p> Please use BTC, if the product you want to buy was in USD just click the "Show BTC option" button</p></label>
+  <button class="nnbb" onclick="selectPayMethod('NGN')">🇳🇬 Pay with NGN (Bank Transfer)</button>
+  <button class="nnbb" onclick="selectPayMethod('USD')">🌍 Pay with USD (Crypto – BTC)</button>
+</div>
+
+<!-- NEW PAYMENT DETAILS PAGE -->
+<div id="paymentDetailsPage" style="display:none;">
+  <h3>Payment Summary</h3>
+  <button onclick="goBackToPaymentMethods()" class="nnbb" 
+style="background:#444;margin-bottom:10px;">⬅️ Change Payment Method</button>
+  <p id="chosenMethodDisplay"></p>
+  <p id="convertedPrice"></p>
+
+  <hr>
+
+  <!-- NGN DETAILS -->
+  <div id="ngnDetails" style="display:none;">
+    <label><b>Bank Transfer (NG – Opay)</b></label>
     <div class="copy-box">
-      <span id="opayText">9114301708</span>
-      <button class="copy-btn" onclick="copyText('opayText')">Copy</button>
+      <span id="opayText2">9114301708</span>
+      <button class="copy-btn" onclick="copyText('opayText2')">Copy</button>
     </div>
-
     <div class="copy-box">
-      <span id="bankName">Opay Bank</span>
-      <button class="copy-btn" onclick="copyText('bankName')">Copy</button>
+      <span id="bankName2">Opay Bank</span>
+      <button class="copy-btn" onclick="copyText('bankName2')">Copy</button>
     </div>
-
     <div class="copy-box">
-      <span id="acctName">Ayomide Abdumalik Olatunji</span>
-      <button class="copy-btn" onclick="copyText('acctName')">Copy</button>
+      <span id="acctName2">Ayomide Abdumalik Olatunji</span>
+      <button class="copy-btn" onclick="copyText('acctName2')">Copy</button>
     </div>
+  </div>
 
-    <hr style="margin:15px 0; border:0; border-top:1px solid #ccc;">
-<p> 💲 👇 Please use BTC, if the product you want to buy was in USD just click the "Show BTC option" button. 👇</p> <p> When you've done with your payment make sure you scroll down 👇 and upload a screenshot and also drop your contact details, then click "Submit payment" button ⬇️</p>
-    <button onclick="toggleBTC()" style="width:100%; background:#222; padding:10px; border-radius:6px; color:#fff; margin:10px 0;">
-      Show BTC Payment Option
-    </button>
-
-    <div id="btcSection" style="display:none;">
-      <label><b>BTC Address (For Foreign Buyers)</b></label>
-      <div class="copy-box">
-        <span id="btcText">bc1qxhyddpkgvdc68tj9xk5gf5k2vnxmnfy4xrwwr4</span>
-        <button class="copy-btn" onclick="copyText('btcText')">Copy</button>
-      </div>
-      <div class="copy-box">
-        <span id="btcNetwork">Bitcoin — BTC Network</span>
-        <button class="copy-btn" onclick="copyText('btcNetwork')">Copy</button>
-      </div>
-      <div style="background:#fff4ce; padding:10px; margin-top:5px; border-left:4px solid #ffbb00; border-radius:6px; font-size:14px; color:#8a6d00; font-weight:bold;">
-        ⚠️ Trust Wallet is Recommended for BTC Payments
-      </div>
+  <!-- USD DETAILS -->
+  <div id="usdDetails" style="display:none;">
+    <label><b>BTC Address (For Foreign Buyers)</b></label>
+    <div class="copy-box">
+      <span id="btcText2">bc1qxhyddpkgvdc68tj9xk5gf5k2vnxmnfy4xrwwr4</span>
+      <button class="copy-btn" onclick="copyText('btcText2')">Copy</button>
     </div>
-
-    <div style="background:#ffe6e6; padding:12px; border-radius:8px; margin-top:15px; font-weight:bold; color:#d8000c; text-align:center; font-size:16px;">
-      Payment Time Left: <span id="timer">05:00</span>
+    <div class="copy-box">
+      <span id="btcNetwork2">Bitcoin — BTC Network</span>
+      <button class="copy-btn" onclick="copyText('btcNetwork2')">Copy</button>
     </div>
+  </div>
 
-    <label>Upload Payment Screenshot:</label>
-    <input type="file" id="paymentScreenshot" accept="image/*">
+  <hr>
 
-    <label><b>Select Contact Method</b></label>
-    <select id="contactMethod">
-      <option value="">Select contact method</option>
-      <option value="WhatsApp">WhatsApp</option>
-      <option value="Telegram">Telegram</option>
-      <option value="WeChat">WeChat</option>
-      <option value="Google Chat">Google Chat</option>
-    </select>
+  <label>Upload Payment Screenshot:</label>
+  <input type="file" id="paymentScreenshot" accept="image/*">
 
-    <label><b>Enter your Contact Username/Number</b></label>
-    <input type="text" id="buyerContact" placeholder="Enter your contact here">
+  <label><b>Select Contact Method</b></label>
+  <select id="contactMethod">
+    <option value="">Select contact method</option>
+    <option value="WhatsApp">WhatsApp</option>
+    <option value="Telegram">Telegram</option>
+    <option value="WeChat">WeChat</option>
+    <option value="Google Chat">Google Chat</option>
+  </select>
 
-    <button id="submitPayment" class="nnbb">Submit Payment</button>
-    <button id="closeModal" style="background:#dc3545;">Cancel</button>
+  <label><b>Enter your Contact Username/Number</b></label>
+  <input type="text" id="buyerContact" placeholder="Enter your contact here">
+
+<button id="submitPayment" class="nnbb">Submit Payment</button>
+<button id="closeModal" style="background:#dc3545;" class="nnbb">Cancel</button>
+</div>
   </div>
 </div>
 
@@ -481,6 +496,23 @@ button:active {
 
 <script>
 // TELEGRAM WEBAPP
+// =============================================
+// LIVE USD → NGN EXCHANGE RATE FETCH
+// =============================================
+let liveRate = 0;
+
+async function fetchLiveRate() {
+    try {
+        const res = await fetch("https://open.er-api.com/v6/latest/USD");
+        const data = await res.json();
+        liveRate = data.rates.NGN;
+        console.log("Live NGN/USD Rate:", liveRate);
+    } catch (e) {
+        liveRate = 1500; // fallback
+        console.log("Live rate failed. Using Fallback ₦1500");
+    }
+}
+fetchLiveRate();
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 
@@ -566,8 +598,83 @@ function openBuyModal() { timeLeft=300; startTimer(); buyModal.style.display="fl
 const buyModal = document.getElementById('buyModal');
 document.getElementById('closeModal').onclick = ()=> buyModal.style.display="none";
 const container = document.getElementById('productsContainer');
-let currentProduct = null;
+let selectedMethod = null;
+// =============================================
+// UPDATED PAYMENT METHOD HANDLER WITH LIVE RATE
+// =============================================
+async function selectPayMethod(method) {
+    selectedMethod = method;
+// load rate before use
+if (method === "NGN" && liveRate === 0) {
+    await fetchLiveRate();
+}
 
+document.getElementById("choosePayMethod").style.display = "none";
+document.getElementById("paymentDetailsPage").style.display = "block";
+
+document.getElementById("chosenMethodDisplay").innerHTML =
+    `<b>Payment Method:</b> ${method === 'NGN' ? "NGN Bank Transfer" : "USD Crypto (BTC)"}`;
+
+// ===============================================
+// PRICE + $1 FEE SYSTEM
+// ===============================================
+let basePrice = Number(currentProduct.price); // original product price in USD or NGN
+let feeUSD = 1;                               // $1 charge fee (fixed)
+let totalUSD = 0;
+
+// Convert everything to USD first
+if (currentProduct.currency === "USD") {
+    // USD PRODUCT
+    totalUSD = basePrice + feeUSD;
+} else {
+    // NGN PRODUCT → convert to USD first
+    totalUSD = (basePrice / liveRate) + feeUSD;
+}
+
+// ===============================================
+// NGN PAYMENT METHOD
+// ===============================================
+if (method === "NGN") {
+    // Convert final USD amount → NGN
+    let totalNGN = totalUSD * liveRate;
+
+    document.getElementById("convertedPrice").innerHTML =
+        `<b>Total Amount:</b> ₦${Math.round(totalNGN).toLocaleString()} <br>
+         <small style='color:#777'>Product Price: ${basePrice} ${currentProduct.currency}</small><br>
+         <small style='color:#777'>+$1 fee included (converted)</small><br>
+         <small style='color:#777'>Live rate: ₦${Math.round(liveRate)}/$</small>`;
+
+    document.getElementById("ngnDetails").style.display = "block";
+    document.getElementById("usdDetails").style.display = "none";
+}
+
+// ===============================================
+// USD PAYMENT METHOD
+// ===============================================
+else {
+    document.getElementById("convertedPrice").innerHTML =
+        `<b>Total Amount:</b> $${totalUSD.toFixed(2)} <br>
+         <small style='color:#777'>Product Price: ${basePrice} ${currentProduct.currency}</small><br>
+         <small style='color:#777'>+$1 fee included</small><br>
+         <small style='color:#777'>Live rate: ₦${Math.round(liveRate)}/$</small>`;
+
+    document.getElementById("ngnDetails").style.display = "none";
+    document.getElementById("usdDetails").style.display = "block";
+}
+}
+function goBackToPaymentMethods() {
+    selectedMethod = null;
+
+    document.getElementById("paymentScreenshot").value = "";
+    document.getElementById("contactMethod").value = "";
+    document.getElementById("buyerContact").value = "";
+
+    document.getElementById("paymentDetailsPage").style.display = "none";
+    document.getElementById("ngnDetails").style.display = "none";
+    document.getElementById("usdDetails").style.display = "none";
+
+    document.getElementById("choosePayMethod").style.display = "block";
+}
 function renderProducts(){
   container.innerHTML = "";
   productsData.forEach((prod)=>{
@@ -597,13 +704,10 @@ function renderProducts(){
 }
 
 function showPaymentInfo(){
-  const fee = currentProduct.currency === "NGN" ? 1000 : 1;
-  const total = Number(currentProduct.price) + fee;
-  document.getElementById('paymentInfo').innerHTML = `
-    <b>Product:</b> ${currentProduct.name}<br>
-    <b>Price:</b> ${currentProduct.price} ${currentProduct.currency}<br>
-    <b>Fee:</b> ${fee} ${currentProduct.currency}<br><br>
-    <b>Total:</b> ${total} ${currentProduct.currency}
+  document.getElementById("paymentInfo").innerHTML = `
+    <b>${currentProduct.name}</b><br>
+    Price: ${currentProduct.price} ${currentProduct.currency}<br><br>
+    Select payment method below:
   `;
 }
 
