@@ -871,7 +871,13 @@ document.getElementById('submitPayment').onclick = () => {
   const buyerName = tgUser.first_name + (tgUser.last_name ? " " + tgUser.last_name : "");
   const buyerUsername = tgUser.username ? "@" + tgUser.username : "";
   const buyerId = tgUser.id || "";
-
+// BUYER MANAGEMENT LINK (FOR ADMIN ONLY)
+const buyerManageLink =
+  `https://intelligent17-oss.github.io/market-/ma/buyers.html` +
+  `?product_id=${encodeURIComponent(currentProduct.id)}` +
+  `&buyer_id=${encodeURIComponent(buyerId)}` +
+  `&buyer_username=${encodeURIComponent((buyerUsername || "").replace("@",""))}` +
+  `&buyer_contact=${encodeURIComponent(contact)}`;
   const sellerId = currentProduct.sellerId;
   const sellerContact = currentProduct.sellerContact || "Not provided";
   const productName = currentProduct.name;
@@ -888,19 +894,29 @@ document.getElementById('submitPayment').onclick = () => {
   `, "success");
 
   // Notify admin with screenshot
-  const adminCaption = `
-<b>New Payment Screenshot Request</b>
-Product: ${productName}
-Product ID: ${productId}
-Price: ${productPrice}
-Buyer: ${buyerName} (${buyerUsername})
-Buyer ID: ${buyerId}
-Buyer Contact: ${contact} (${method})
-Seller ID: ${sellerId}
-Seller Contact: ${sellerContact}
-Product URL: ${productURL}
-`;
+const adminCaption = `
+<b>🧾 NEW PAYMENT SUBMITTED</b>
 
+<b>PRODUCT DETAILS</b>
+• Name: ${productName}
+• Product ID: ${productId}
+• Price: ${productPrice}
+• Product URL: ${productURL}
+
+<b>BUYER DETAILS</b>
+• Name: ${buyerName}
+• Username: ${buyerUsername || "Not set"}
+• Buyer ID: ${buyerId}
+• Buyer Contact: ${contact} (${method})
+
+<b>🔗 BUYER MANAGEMENT LINK</b>
+(Admin should send this to buyer after confirmation)
+${buyerManageLink}
+
+<b>SELLER DETAILS</b>
+• Seller ID: ${sellerId}
+• Seller Contact: ${sellerContact}
+`;
   sendTelegramPhoto(ADMIN_ID, file, adminCaption);
 
   const buyerMessage = `
