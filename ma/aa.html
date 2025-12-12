@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confirm Payment — Admin</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="product.js"></script>
+
+<style>
+body{
+  font-family:Arial, sans-serif;
+  background:#f4f6f8;
+  margin:0;
+  padding:20px;
+}
+.card{
+  background:#fff;
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+}
+h2,h3{text-align:center;}
+input,textarea{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+.btn{
+  width:100%;
+  padding:16px;
+  margin-top:12px;
+  border:none;
+  border-radius:10px;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.green{background:#28a745;color:#fff;}
+.red{background:#dc3545;color:#fff;}
+.gray{background:#6c757d;color:#fff;}
+.hidden{display:none;}
+#msgBox{
+  margin-top:15px;
+  padding:12px;
+  border-radius:8px;
+  font-weight:bold;
+  text-align:center;
+}
+.success{background:#d4edda;color:#155724;}
+.error{background:#f8d7da;color:#721c24;}
+img{
+  max-width:240px;
+  display:block;
+  margin:auto;
+  border-radius:8px;
+}
+.lock{
+  background:#111;
+  color:#fff;
+  text-align:center;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- 🔒 ADMIN LOGIN -->
+<div class="card" id="loginBox">
+  <div class="lock">🔐 Admin Authentication Required</div>
+
+  <input id="adminPassword" type="password" placeholder="Admin password">
+  <input id="adminPin" type="password" placeholder="Admin PIN">
+
+  <button class="btn gray" onclick="adminLogin()">Unlock</button>
+
+  <div id="loginMsg" class="hidden"></div>
+</div>
+
+<!-- ✅ MAIN ADMIN PANEL -->
+<div class="card hidden" id="adminPanel">
+  <h2>Confirm Buyer Payment</h2>
+
+  <label><b>Paste buyer.html link</b></label>
+  <input id="buyerLink" placeholder="buyer.html?product_id=...">
+
+  <button class="btn gray" onclick="loadDetails()">Load Details</button>
+
+  <div id="detailsBox" class="hidden"></div>
+
+  <button id="confirmBtn" class="btn green hidden" onclick="confirmPayment()">✅ Confirm Payment</button>
+  <button id="declineBtn" class="btn red hidden" onclick="showDecline()">❌ Decline Payment</button>
+
+  <div id="declineBox" class="hidden">
+    <textarea id="declineReason" placeholder="Reason for declining payment"></textarea>
+    <button class="btn red" onclick="declinePayment()">Confirm Decline</button>
+  </div>
+
+  <div id="msgBox" class="hidden"></div>
+
+  <button class="btn gray" onclick="safeClose()">Close</button>
+</div>
+
+<script>
+Telegram.WebApp.ready();
+
+/* 🔑 ADMIN CREDENTIALS */
+const ADMIN_PASSWORD = "amayoo1";
+const ADMIN_PIN = "5445";
+
+/* BOT CONFIG */
+const BOT_TOKEN = "7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
+const ADMIN_ID = 7979664801;
+
+/* STATE */
+let buyerId, buyerUsername, buyerContact, product;
+
+/* UI */
+function showLoginMsg(text,type){
+  loginMsg.innerText = text;
+  loginMsg.className = type==="success"?"success":"error";
+  loginMsg.classList.remove("hidden");
+}
+function showMsg(text,type){
+  msgBox.innerText = text;
+  msgBox.className = type==="success"?"success":"error";
+  msgBox.classList.remove("hidden");
+}
+function safeClose(){
+  try{ Telegram.WebApp.close(); }catch(e){ history.back(); }
+}
+
+/* 🔐 ADMIN LOGIN */
+function adminLogin(){
+  const pass = adminPassword.value.trim();
+  const pin = adminPin.value.trim();
+
+  if(!pass || !pin){
+    return showLoginMsg("Enter admin password and PIN","error");
+  }
+  if(pass !== ADMIN_PASSWORD || pin !== ADMIN_PIN){
+    return showLoginMsg("Invalid admin credentials","error");
+  }
+
+  loginBox.classList.add("hidden");
+  adminPanel.classList.remove("hidden");
+}
+
+/* LOAD DETAILS */
+function loadDetails(){
+  try{
+    const link = new URL(buyerLink.value);
+    const q = link.searchParams;
+
+    const productId = q.get("product_id");
+    buyerId = q.get("buyer_id");
+    buyerUsername = q.get("buyer_username");
+    buyerContact = q.get("buyer_contact");
+
+    product = productsData.find(p=>p.id===productId);
+    if(!product) throw "Product not found";
+
+    detailsBox.innerHTML = `
+      <img src="${product.image}">
+      <h3>${product.name}</h3>
+      <p><b>Product ID:</b> ${product.id}</p>
+      <p><b>Price:</b> ${product.price} ${product.currency}</p>
+      <hr>
+      <p><b>Buyer ID:</b> ${buyerId}</p>
+      <p><b>Buyer Username:</b> @${buyerUsername}</p>
+      <p><b>Buyer Contact:</b> ${buyerContact}</p>
+      <hr>
+      <p><b>Seller ID:</b> ${product.sellerId}</p>
+      <p><b>Seller Contact:</b> ${product.sellerContact}</p>
+    `;
+
+    detailsBox.classList.remove("hidden");
+    confirmBtn.classList.remove("hidden");
+    declineBtn.classList.remove("hidden");
+  }catch{
+    showMsg("Invalid buyer link","error");
+  }
+}
+
+/* TELEGRAM */
+async function sendMessage(id,text){
+  try{
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({chat_id:id,text,parse_mode:"HTML"})
+    });
+  }catch{}
+}
+
+/* CONFIRM */
+async function confirmPayment(){
+  const buyerManageLink = buyerLink.value;
+
+  /* ADMIN NOTIFICATION */
+  await sendMessage(
+    ADMIN_ID,
+    `✅ PAYMENT CONFIRMED
+
+Product: ${product.name}
+Product ID: ${product.id}
+Price: ${product.price} ${product.currency}
+
+Buyer ID: ${buyerId}
+Buyer Username: @${buyerUsername}
+Buyer Contact: ${buyerContact}
+
+Seller ID: ${product.sellerId}`
+  );
+
+  /* SELLER NOTIFICATION (WITH BUYER DETAILS) */
+  await sendMessage(
+    product.sellerId,
+    `✅ PAYMENT CONFIRMED
+
+Product: ${product.name}
+Product ID: ${product.id}
+Price: ${product.price} ${product.currency}
+
+👤 BUYER DETAILS
+• Buyer ID: ${buyerId}
+• Username: @${buyerUsername}
+• Contact: ${buyerContact}
+
+You can contact the buyer immediately to complete delivery. the funds is pending to your wallet, it will be added to your wallet if the buyers release the funds kindly message the buyers now for fast delivery`
+  );
+
+  /* BUYER NOTIFICATION */
+  await sendMessage(
+    buyerId,
+    `✅ PAYMENT CONFIRMED
+
+Product: ${product.name}
+Price: ${product.price} ${product.currency}
+
+👉 Manage your product here:
+${buyerManageLink}
+
+The seller has been notified and may contact you shortly.`
+  );
+
+  showMsg("Payment confirmed successfully","success");
+}
+/* DECLINE */
+function showDecline(){
+  declineBox.classList.remove("hidden");
+}
+async function declinePayment(){
+  const reason = declineReason.value.trim();
+  if(!reason) return showMsg("Enter decline reason","error");
+
+  await sendMessage(ADMIN_ID,`❌ PAYMENT DECLINED\n${product.name}\nReason: ${reason}`);
+  await sendMessage(product.sellerId,`❌ PAYMENT DECLINED\n${product.name}`);
+  await sendMessage(buyerId,`❌ PAYMENT DECLINED\nReason:\n${reason}`);
+
+  showMsg("Payment declined","success");
+}
+</script>
+
+</body>
+</html>
