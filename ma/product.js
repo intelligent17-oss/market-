@@ -1,6 +1,17 @@
 // PRODUCTS DATA
 const productsData = [
 {
+  id: "P1765526509190",
+  name: "AUSTRALIAN FEMALE TIKTOK 140 FOLLOWERS....& AMASSING",
+  description: "FRESHLY SPAMMED AUSTRALIAN FEMALE TIKTOK WITH EMAIL",
+  price: "6000",
+  currency: "NGN",
+  image: "https://ibb.co/Lz3RC8gR",
+  sellerId: 8097634090,
+  sellerContact: "Whatsapp: +2349067581749",
+  url: "https://tiktok.com/@waselighis"
+},
+{
   id: "P1765260605236",
   name: "Tiktok account with 1k followers",
   description: "5 years Tiktok with 1k+ followers",
