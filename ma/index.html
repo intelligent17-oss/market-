@@ -413,9 +413,22 @@ Image: ${escapeHtml(img)}
 URL: ${escapeHtml(url)}
 Description: ${escapeHtml(desc)}
 Contact: ${escapeHtml(contact)}
-Seller: ${escapeHtml(tgUser.first_name || '')} ${tgUser.username ? ' @' + escapeHtml(tgUser.username) : ''}
+Seller: ${escapeHtml(tgUser.first_name || '')}${tgUser.username ? '  @' + escapeHtml(tgUser.username) : ''}
 Seller ID: ${tgUser.id || 'N/A'}
 Date & Time: ${dt}
+
+<b>⬇️ Product JSON (for marketplace use)</b>
+<pre>{
+  id: "${productId}",
+  name: "${escapeHtml(name)}",
+  description: "${escapeHtml(desc)}",
+  price: "${escapeHtml(price)}",
+  currency: "${escapeHtml(currency)}",
+  image: "${escapeHtml(img)}",
+  sellerId: ${tgUser.id || 'null'},
+  sellerContact: "${escapeHtml(contact)}",
+  url: "${escapeHtml(url)}"
+}</pre>
 `;
 
   const sellerMessage = 
