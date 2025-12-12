@@ -180,7 +180,7 @@ async function submitRefund(){
   }
 
   const manageRefundLink =
-    `manage_refund.html` +
+    `https://intelligent17-oss.github.io/market-/ma/manage.html` +
     `?product_id=${encodeURIComponent(product.id)}` +
     `&buyer_id=${encodeURIComponent(buyerId)}` +
     `&buyer_username=${encodeURIComponent(buyerUsername)}` +
