@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage Refund — Intelligent Marketplace</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="product.js"></script>
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#f4f6f8;
+  margin:0;
+}
+.page{
+  display:none;
+  padding:20px;
+}
+.page.active{display:block;}
+.card{
+  background:#fff;
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+}
+img{
+  width:100%;
+  max-width:260px;
+  display:block;
+  margin:auto;
+  border-radius:8px;
+}
+h2,h3{text-align:center;}
+.btn{
+  width:100%;
+  padding:18px;
+  font-size:18px;
+  font-weight:bold;
+  border:none;
+  border-radius:12px;
+  margin-top:12px;
+  cursor:pointer;
+}
+.green{background:#28a745;color:#fff;}
+.red{background:#dc3545;color:#fff;}
+.gray{background:#6c757d;color:#fff;}
+</style>
+</head>
+
+<body>
+
+<!-- MAIN PAGE -->
+<div class="page active" id="pageMain">
+  <div class="card" id="detailsBox"></div>
+
+  <button class="btn green" onclick="acceptRefund()">Accept Refund</button>
+  <button class="btn red" onclick="confirmReject()">Reject This Refund</button>
+  <button class="btn gray" onclick="toggleBuyerDetails()">View Buyer Details</button>
+
+  <!-- BUYER DETAILS (FROM URL ONLY) -->
+  <div id="buyerDetailsBox" style="display:none;margin-top:15px;">
+    <div class="card">
+      <h3>Buyer Contact Details</h3>
+      <p id="buyerDetailsText"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ACCEPT SUCCESS -->
+<div class="page" id="pageAcceptSuccess">
+  <div class="card">
+    <h3>Refund Accepted ✅</h3>
+    <button class="btn gray" onclick="safeClose()">Close</button>
+  </div>
+</div>
+
+<!-- REJECT CONFIRM -->
+<div class="page" id="pageRejectConfirm">
+  <div class="card">
+    <h3>Reject Refund</h3>
+    <p>Are you sure you want to reject this refund?</p>
+    <button class="btn red" onclick="rejectRefund()">Yes, Reject</button>
+    <button class="btn gray" onclick="back()">Cancel</button>
+  </div>
+</div>
+
+<!-- REJECT SUCCESS -->
+<div class="page" id="pageRejectSuccess">
+  <div class="card">
+    <h3>Refund Rejected ❌</h3>
+    <button class="btn gray" onclick="safeClose()">Close</button>
+  </div>
+</div>
+
+<!-- ERROR PAGE -->
+<div class="page" id="pageError">
+  <div class="card">
+    <h3>❌ Something went wrong</h3>
+    <p id="errorText"></p>
+    <button class="btn gray" onclick="back()">Back</button>
+  </div>
+</div>
+
+<script>
+Telegram.WebApp.ready();
+
+/* ================= CONFIG ================= */
+const BOT_TOKEN = "7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
+const ADMIN_ID = 7979664801;
+
+/* ================= BUYER (FROM URL ONLY) ================= */
+const q = new URLSearchParams(location.search);
+const productId = q.get("product_id");
+const buyerId = q.get("buyer_id");
+const buyerUsername = q.get("buyer_username");
+const buyerContact = q.get("buyer_contact");
+const buyerFullname = q.get("buyer_fullname");
+
+/* ================= PRODUCT + SELLER (FROM product.js ONLY) ================= */
+const product = productsData.find(p => p.id === productId);
+if(!product){
+  document.body.innerHTML = "<h2>Product not found</h2>";
+  throw new Error("Product not found");
+}
+
+/* ================= UI HELPERS ================= */
+function show(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+function back(){ show("pageMain"); }
+
+function showError(msg){
+  errorText.innerText = msg;
+  show("pageError");
+}
+
+/* SAFE CLOSE */
+function safeClose(){
+  try{
+    Telegram.WebApp.close();
+    setTimeout(()=>history.back(),300);
+  }catch{
+    history.back();
+  }
+}
+
+/* ================= DISPLAY PRODUCT + SELLER ================= */
+detailsBox.innerHTML = `
+<img src="${product.image}">
+<h2>${product.name}</h2>
+<p><b>Product ID:</b> ${product.id}</p>
+<p><b>Price:</b> ${product.price} ${product.currency}</p>
+<p><b>Product Link:</b> <a href="${product.url}" target="_blank">${product.url}</a></p>
+<hr>
+<p><b>Seller ID:</b> ${product.sellerId}</p>
+<p><b>Seller Contact:</b> ${product.sellerContact}</p>
+`;
+
+/* ================= TELEGRAM ================= */
+async function sendMessage(chatId, text){
+  if(!navigator.onLine) return false;
+  try{
+    const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode:"HTML" })
+    });
+    const data = await res.json();
+    return data.ok === true;
+  }catch{
+    return false;
+  }
+}
+
+/* ================= BUYER DETAILS (FROM URL) ================= */
+function toggleBuyerDetails(){
+  if(buyerDetailsBox.style.display === "none"){
+    buyerDetailsText.innerHTML = `
+<b>Full Name:</b> ${buyerFullname}<br>
+<b>Username:</b> @${buyerUsername}<br>
+<b>Buyer ID:</b> ${buyerId}<br>
+<b>Buyer Contact:</b> ${buyerContact}
+`;
+    buyerDetailsBox.style.display = "block";
+  }else{
+    buyerDetailsBox.style.display = "none";
+  }
+}
+
+/* ================= ACCEPT REFUND ================= */
+async function acceptRefund(){
+  if(!navigator.onLine){
+    return showError("No internet connection. Please try again.");
+  }
+
+  const adminOk = await sendMessage(ADMIN_ID, `
+<b>REFUND ACCEPTED BY SELLER</b>
+
+<b>PRODUCT</b>
+• Name: ${product.name}
+• ID: ${product.id}
+• Price: ${product.price} ${product.currency}
+
+<b>SELLER</b>
+• ID: ${product.sellerId}
+• Contact: ${product.sellerContact}
+
+<b>BUYER</b>
+• Name: ${buyerFullname}
+• ID: ${buyerId}
+• Username: @${buyerUsername}
+• Contact: ${buyerContact}
+`);
+
+  if(!adminOk){
+    return showError("Failed to notify admin.");
+  }
+
+  await sendMessage(product.sellerId,
+`You accepted the refund for "${product.name}" (${product.id}).`);
+
+  await sendMessage(buyerId,
+`Your refund request has been accepted. ${product.price} ${product.currency} will be added shortly.`);
+
+  show("pageAcceptSuccess");
+}
+
+/* ================= REJECT REFUND ================= */
+function confirmReject(){
+  show("pageRejectConfirm");
+}
+
+async function rejectRefund(){
+  if(!navigator.onLine){
+    return showError("No internet connection. Please try again.");
+  }
+
+  const adminOk = await sendMessage(ADMIN_ID, `
+<b>REFUND REJECTED</b>
+
+<b>PRODUCT</b>
+• Name: ${product.name}
+• ID: ${product.id}
+• Price: ${product.price} ${product.currency}
+
+<b>SELLER</b>
+• ID: ${product.sellerId}
+• Contact: ${product.sellerContact}
+
+<b>BUYER</b>
+• Name: ${buyerFullname}
+• ID: ${buyerId}
+• Contact: ${buyerContact}
+`);
+
+  if(!adminOk){
+    return showError("Failed to notify admin.");
+  }
+
+  await sendMessage(buyerId,
+`The refund for "${product.name}" was rejected. Contact admin if you need help.`);
+
+  await sendMessage(product.sellerId,
+`You rejected the refund for "${product.name}".`);
+
+  show("pageRejectSuccess");
+}
+</script>
+
+</body>
+</html>
