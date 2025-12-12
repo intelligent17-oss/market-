@@ -1,6 +1,17 @@
 // PRODUCTS DATA
 const productsData = [
 {
+  id: "P1765523341865",
+  name: "2023 Sharp Facebook Switch Profile",
+  description: "Already secured and active with 100 percent bombing response, text me for login",
+  price: "3500",
+  currency: "NGN",
+  image: "https://imgur.com/a/u74UNFD",
+  sellerId: 7227113353,
+  sellerContact: "Whatsapp: +2347075433008",
+  url: "https://www.facebook.com/share/1AzZG38Nrv/?mibextid=wwXIfr"
+},
+{
   id: "P1765526244522",
   name: "AUSTRALIAN TIKTOK 229 FOLLOWERS",
   description: "Freshly spammed Australia TikTok with outlook mail. Followers on Amassing",
