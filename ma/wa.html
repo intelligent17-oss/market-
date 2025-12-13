@@ -32,11 +32,6 @@ input,select{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1p
 .pending-item{background:#fff4ce;border-left:4px solid #ffbb00;padding:10px;border-radius:8px;margin-top:10px;font-size:14px;font-weight:bold;color:#6b5200}
 .pending-item.success{background:#d4edda;border-left-color:#28a745;color:#155724}
 .muted{font-size:12px;font-weight:bold;opacity:.85;margin-top:6px}
-body.dark{background:#0f1113;color:#e6eef8}
-body.dark .card{background:#151719}
-body.dark .pill{background:#0f1720;border:1px solid #264653;color:#e6eef8}
-body.dark input,body.dark select{background:#0b0d0f;color:#e6eef8;border:1px solid #2b2f33}
-body.dark #themeToggle{background:#fff;color:#000}
 </style>
 </head>
 
@@ -44,7 +39,6 @@ body.dark #themeToggle{background:#fff;color:#000}
 
 <div class="header-wrap">
   <h2>Intelligent Marketplace — Wallet</h2>
-  <button id="themeToggle">🌙</button>
 </div>
 
 <div class="card" id="userInfo">
@@ -107,6 +101,18 @@ Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 const tgUser = Telegram.WebApp.initDataUnsafe.user || {};
 
+/* ===== BOT CONFIG ===== */
+const BOT_TOKEN = "7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
+const ADMIN_ID = "8140042906";
+
+function sendTelegram(chatId, text){
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({chat_id:chatId,text:text})
+  });
+}
+
 /* ===== USER ===== */
 name.textContent = (tgUser.first_name||"") + (tgUser.last_name?" "+tgUser.last_name:"");
 username.textContent = tgUser.username ? "@"+tgUser.username : "No username";
@@ -117,35 +123,32 @@ if(tgUser.photo_url) profilePic.src = tgUser.photo_url;
 let rate = 1500;
 fetch("https://open.er-api.com/v6/latest/USD")
   .then(r=>r.json())
-  .then(d=>rate=d.rates.NGN||1500)
-  .catch(()=>rate=1500);
+  .then(d=>rate=d.rates.NGN||1500);
 
-/* ===== BALANCE DATABASE ===== */
-const adminBalance = walletBalances[tgUser.id] || 0;
+/* ===== BALANCE ===== */
+const baseBalance = walletBalances[tgUser.id] || 0;
 
 /* ===== STORAGE ===== */
 const STORE_KEY = "withdrawals_"+tgUser.id;
 let withdrawals = JSON.parse(localStorage.getItem(STORE_KEY)) || [];
 
-/* ===== SYNC SUCCESS ===== */
-withdrawals = withdrawals.map(w=>{
-  if(w.status==="PENDING" && w.expectedBalance === adminBalance){
-    return {...w,status:"SUCCESS",approvedAt:new Date().toISOString()};
-  }
-  return w;
-});
-localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
-
 /* ===== CALC ===== */
-const pendingTotal = withdrawals.filter(w=>w.status==="PENDING").reduce((s,w)=>s+w.amountNGN,0);
-const available = adminBalance - pendingTotal;
+function pendingTotal(){
+  return withdrawals.filter(w=>w.status==="PENDING")
+    .reduce((s,w)=>s+w.amountNGN,0);
+}
+
+function availableBalance(){
+  return baseBalance - pendingTotal();
+}
 
 /* ===== UI ===== */
 function updateUI(){
-  ngnBal.textContent = "₦"+Math.max(0,available).toLocaleString();
-  usdBal.textContent = "≈ $"+(Math.max(0,available)/rate).toFixed(2);
-  pillBase.textContent = "Base: ₦"+adminBalance.toLocaleString();
-  pillPending.textContent = "Pending: ₦"+pendingTotal.toLocaleString();
+  const avail = Math.max(0, availableBalance());
+  ngnBal.textContent = "₦"+avail.toLocaleString();
+  usdBal.textContent = "≈ $"+(avail/rate).toFixed(2);
+  pillBase.textContent = "Base: ₦"+baseBalance.toLocaleString();
+  pillPending.textContent = "Pending: ₦"+pendingTotal().toLocaleString();
 
   pendingList.innerHTML = withdrawals.length
     ? withdrawals.slice().reverse().map(w=>`
@@ -156,30 +159,6 @@ function updateUI(){
 }
 updateUI();
 
-/* ===== CENTER MESSAGE (NO DESIGN CHANGE) ===== */
-function showCenterMessage(text, type){
-  let box = document.getElementById("centerMsg");
-  if(!box){
-    box=document.createElement("div");
-    box.id="centerMsg";
-    box.style.position="fixed";
-    box.style.top="50%";
-    box.style.left="50%";
-    box.style.transform="translate(-50%,-50%)";
-    box.style.padding="18px 22px";
-    box.style.borderRadius="12px";
-    box.style.fontWeight="bold";
-    box.style.zIndex="9999";
-    box.style.boxShadow="0 8px 22px rgba(0,0,0,.25)";
-    document.body.appendChild(box);
-  }
-  box.style.background = type==="success"?"#d4edda":"#f8d7da";
-  box.style.color = type==="success"?"#155724":"#721c24";
-  box.style.border = type==="success"?"2px solid #28a745":"2px solid #dc3545";
-  box.textContent = text;
-  setTimeout(()=>box.remove(),3000);
-}
-
 /* ===== WITHDRAW UI ===== */
 function openWithdraw(){withdrawBox.classList.remove("hidden")}
 function closeWithdraw(){withdrawBox.classList.add("hidden")}
@@ -188,40 +167,34 @@ function switchMethod(){
   bnbBox.classList.toggle("hidden",method.value!=="bnb");
 }
 
-/* ===== WITHDRAW ACTIONS ===== */
+/* ===== BANK ===== */
 function submitBank(){
-  const amt=Number(bankAmount.value);
-  if(amt<5000) return showCenterMessage("❌ Minimum withdrawal is ₦5,000","error");
-  if(amt>available) return showCenterMessage("❌ Insufficient balance","error");
+  const amt = Number(bankAmount.value);
+  if(amt < 5000) return alert("Minimum withdrawal ₦5,000");
+  if(amt > availableBalance()) return alert("Insufficient balance");
 
-  withdrawals.push({
-    method:"BANK",
-    amountNGN:amt,
-    status:"PENDING",
-    expectedBalance: adminBalance-amt,
-    date:new Date().toISOString()
-  });
+  withdrawals.push({method:"BANK",amountNGN:amt,status:"PENDING"});
   localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
   updateUI();
-  showCenterMessage("✅ Withdrawal request sent","success");
+
+  sendTelegram(ADMIN_ID,`💸 Withdrawal Request\nUser: ${name.textContent}\nID: ${tgUser.id}\nAmount: ₦${amt}`);
+  sendTelegram(tgUser.id,`Your withdrawal of ₦${amt} is pending. Processing may take 24 hours.`);
+
 }
 
+/* ===== BNB ===== */
 function submitBNB(){
-  const usd=Number(bnbAmount.value);
-  const ngn=Math.round(usd*rate);
-  if(usd<20) return showCenterMessage("❌ Minimum withdrawal is $20","error");
-  if(ngn>available) return showCenterMessage("❌ Insufficient balance","error");
+  const usd = Number(bnbAmount.value);
+  const ngn = Math.round(usd*rate);
+  if(usd < 20) return alert("Minimum withdrawal $20");
+  if(ngn > availableBalance()) return alert("Insufficient balance");
 
-  withdrawals.push({
-    method:"BNB",
-    amountNGN:ngn,
-    status:"PENDING",
-    expectedBalance: adminBalance-ngn,
-    date:new Date().toISOString()
-  });
+  withdrawals.push({method:"BNB",amountNGN:ngn,status:"PENDING"});
   localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
   updateUI();
-  showCenterMessage("✅ Withdrawal request sent","success");
+
+  sendTelegram(ADMIN_ID,`💸 Withdrawal Request\nUser: ${name.textContent}\nID: ${tgUser.id}\nAmount: $${usd}`);
+  sendTelegram(tgUser.id,`Your withdrawal of $${usd} is pending. Processing may take 24 hours.`);
 }
 </script>
 
