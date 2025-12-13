@@ -201,7 +201,14 @@ function submitBank(){
   localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
   updateUI();
 
-  sendTelegram(ADMIN_ID,`💸 Withdrawal Request\nUser: ${name.textContent}\nID: ${tgUser.id}\nAmount: ₦${amt}`);
+  const newTotal = availableBalance() - amt;
+
+sendTelegram(ADMIN_ID,`💸 Withdrawal Request
+User: ${name.textContent}
+ID: ${tgUser.id}
+Amount: ₦${amt}
+
+📊 New Updated Balance: ₦${newTotal.toLocaleString()}`);
   sendTelegram(tgUser.id,`Your withdrawal of ₦${amt} is pending. Processing may take 24 hours.`);
 }
 
@@ -216,7 +223,14 @@ function submitBNB(){
   localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
   updateUI();
 
-  sendTelegram(ADMIN_ID,`💸 Withdrawal Request\nUser: ${name.textContent}\nID: ${tgUser.id}\nAmount: $${usd}`);
+  const newTotal = availableBalance() - ngn;
+
+sendTelegram(ADMIN_ID,`💸 Withdrawal Request
+User: ${name.textContent}
+ID: ${tgUser.id}
+Amount: $${usd}
+
+📊 New Updated Balance: ₦${newTotal.toLocaleString()}`);
   sendTelegram(tgUser.id,`Your withdrawal of $${usd} is pending. Processing may take 24 hours.`);
 }
 </script>
