@@ -61,13 +61,6 @@ input,select{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1p
     <div class="pill" id="baseBal">Base: ₦0</div>
   </div>
 </div>
-<p>withdrawal history is saved on your devices</p>
-<div class="card">
-  <h3>Withdrawal History</h3>
-  <div id="historyBox">
-    <i>No withdrawal history yet</i>
-  </div>
-</div>
 <div class="card">
   <button id="withdrawBtn" class="withdraw" onclick="openWithdraw()">Withdraw</button>
   <button class="sell" onclick="location.href='index.html'">Sell Products</button>
@@ -174,37 +167,6 @@ function updateUI(){
   usdBal.textContent = "≈ $" + ((balanceNGN||0) / rate).toFixed(2);
   baseBal.textContent = "Base: ₦" + (balanceNGN||0).toLocaleString();
 }
-
-function renderHistory(){
-  const w = loadWallet();
-  const history = (w && Array.isArray(w.history)) ? w.history : [];
-
-  if(history.length === 0){
-    historyBox.innerHTML = "<i>No withdrawal history yet</i>";
-    return;
-  }
-
-  historyBox.innerHTML = history.slice().reverse().map((h,i)=>`
-    <div style="
-      padding:14px;margin-bottom:12px;border-radius:10px;background:#fff;
-      border-left:6px solid ${
-        h.status === "success" ? "#28a745" :
-        h.status === "pending" ? "#ffc107" : "#dc3545"
-      };
-      box-shadow:0 4px 10px rgba(0,0,0,.08);
-    ">
-      <div style="font-weight:bold;margin-bottom:4px;">
-        #${history.length - i} • ${h.type} Withdrawal
-      </div>
-      <div>💰 Amount: <b>₦${h.amount ?? h.ngn ?? ""}</b></div>
-      <div>📌 Status: <b>${String(h.status||"").toUpperCase()}</b></div>
-      <div>🕒 Requested: ${h.requestedAt ? new Date(h.requestedAt).toLocaleString() : ""}</div>
-      ${h.bank ? `<div>🏦 Bank: ${h.bank}</div>` : ""}
-      ${h.approvedAt ? `<div>✅ Approved: ${new Date(h.approvedAt).toLocaleString()}</div>` : ""}
-    </div>
-  `).join("");
-}
-
 function showMsg(text,type){
   msgBox.textContent = text;
   msgBox.className = "msg " + type;
@@ -257,7 +219,7 @@ function initWalletIfPossible(){
   }
 
   updateUI();
-  renderHistory();
+  
 }
 
 /* =========================
@@ -285,7 +247,7 @@ function syncAndAutoApprove(){
 
     saveWallet(wallet);
     updateUI();
-    renderHistory();
+    
   }
 }
 
@@ -356,7 +318,7 @@ function submitBank(){
 
   saveWallet(wallet);
   updateUI();
-  renderHistory();
+  
 
   sendTG(ADMIN_ID, `Withdrawal Request\nID: ${user.id}\nMethod: BANK\nAmount: ₦${amt}\nBank: ${bankName}\nAcct: ${accountNumber.value}\nName: ${accountName.value}`);
   sendTG(user.id, `Your bank withdrawal request is pending.\nAmount: ₦${amt}\nProcessing time: up to 24 hours`);
@@ -390,7 +352,7 @@ function submitBNB(){
 
   saveWallet(wallet);
   updateUI();
-  renderHistory();
+  
 
   sendTG(ADMIN_ID, `Withdrawal Request\nID: ${user.id}\nMethod: BNB\nAmount: $${usd} (~₦${ngn})`);
   sendTG(user.id, `Your BNB withdrawal request is pending.\nAmount: $${usd}\nProcessing time: up to 24 hours`);
