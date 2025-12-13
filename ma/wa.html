@@ -1,22 +1,193 @@
-/*
-  WALLET BALANCE STORAGE
-  =====================
-  • Balance is stored ONLY in NGN
-  • Key   = Telegram User ID
-  • Value = Balance amount in NGN
-  • If a user ID is NOT listed → balance = ₦0
-*/
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wallet — Intelligent Marketplace</title>
 
-const walletBalances = {
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="balance.js"></script>
 
-  // ===== ADMIN / TEST =====
-  "8140042906": 150000,   // ₦150,000
-  "8097634090": 75000,    // ₦75,000
+<style>
+body{font-family:Arial;background:#f7f7f7;padding:20px}
+.card{background:#fff;padding:18px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.12);margin-bottom:15px}
+button{width:100%;padding:16px;font-size:18px;font-weight:bold;border:none;border-radius:10px;margin-top:10px;cursor:pointer}
+.sell{background:#1a73e8;color:#fff}
+.withdraw{background:#28a745;color:#fff}
+input,select{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc}
+.hidden{display:none}
 
-  // ===== SELLERS / USERS =====
-  "1234567890": 25000,    // ₦25,000
-  "9876543210": 5200,     // ₦5,200
+/* MESSAGE BOX */
+#msgBox{
+  display:none;position:fixed;top:10px;left:50%;
+  transform:translateX(-50%);
+  padding:12px;border-radius:8px;
+  font-weight:bold;z-index:9999;
+}
 
-  // Add more users below 👇
-  // "TELEGRAM_ID": BALANCE_IN_NGN,
-};
+/* POPUP */
+#popup{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,.6);
+  justify-content:center;align-items:center;z-index:99999;
+}
+.popup-content{
+  background:#fff;padding:25px;border-radius:12px;
+  width:90%;max-width:420px;font-weight:bold;text-align:center;
+}
+.popup-success{background:#d4edda;color:#155724;border:2px solid #28a745}
+.popup-error{background:#f8d7da;color:#721c24;border:2px solid #dc3545}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h3 id="name"></h3>
+  <p id="username"></p>
+  <p id="userid"></p>
+</div>
+
+<div class="card">
+  <h2 id="ngnBal">₦0.00</h2>
+  <p id="usdBal">≈ $0.00</p>
+</div>
+
+<div class="card">
+  <button class="withdraw" onclick="openWithdraw()">Withdraw</button>
+  <button class="sell" onclick="location.href='index.html'">Sell Products</button>
+</div>
+
+<div class="card hidden" id="withdrawBox">
+  <select id="method" onchange="switchMethod()">
+    <option value="">Select method</option>
+    <option value="bank">Bank Transfer (NGN)</option>
+    <option value="bnb">Crypto (BNB BEP20)</option>
+  </select>
+
+  <div id="bankBox" class="hidden">
+    <input id="bankAmount" placeholder="Amount NGN">
+    <input id="bankNumber" placeholder="Account Number">
+    <input id="bankName" placeholder="Bank Name">
+    <input id="bankHolder" placeholder="Account Name">
+    <button class="withdraw" onclick="submitBank()">Submit</button>
+  </div>
+
+  <div id="bnbBox" class="hidden">
+    <input id="bnbAddress" placeholder="BNB BEP20 Address">
+    <input id="bnbAmount" placeholder="Amount USD">
+    <button class="withdraw" onclick="submitBNB()">Submit</button>
+  </div>
+</div>
+
+<div id="msgBox"></div>
+
+<div id="popup">
+  <div id="popupContent" class="popup-content"></div>
+</div>
+
+<!-- MONETAG -->
+<script src="//libtl.com/sdk.js" data-zone="9830606" data-sdk="show_9830606"></script>
+
+<script>
+// TELEGRAM INIT
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
+const tgUser = Telegram.WebApp.initDataUnsafe.user || {};
+
+// LIVE RATE
+let rate = 1500;
+fetch("https://open.er-api.com/v6/latest/USD")
+.then(r=>r.json()).then(d=>rate=d.rates.NGN).catch(()=>{});
+
+// USER
+name.textContent = tgUser.first_name+" "+(tgUser.last_name||"");
+username.textContent = tgUser.username ? "@"+tgUser.username : "";
+userid.textContent = "Telegram ID: "+tgUser.id;
+
+// BALANCE
+let balNGN = walletBalances[tgUser.id] || 0;
+ngnBal.textContent = "₦"+balNGN.toLocaleString();
+usdBal.textContent = "≈ $"+(balNGN/rate).toFixed(2);
+
+// MESSAGE
+function showMessage(msg,type="success"){
+  msgBox.style.display="block";
+  msgBox.style.background= type==="success"?"#d4edda":"#f8d7da";
+  msgBox.style.color= type==="success"?"#155724":"#721c24";
+  msgBox.textContent=msg;
+  setTimeout(()=>msgBox.style.display="none",4000);
+}
+
+function showPopup(msg,type){
+  popupContent.className="popup-content "+(type==="success"?"popup-success":"popup-error");
+  popupContent.innerHTML=msg;
+  popup.style.display="flex";
+  popup.onclick=()=>popup.style.display="none";
+}
+
+// WITHDRAW UI
+function openWithdraw(){ withdrawBox.classList.remove("hidden"); }
+function switchMethod(){
+  bankBox.classList.add("hidden"); bnbBox.classList.add("hidden");
+  if(method.value==="bank") bankBox.classList.remove("hidden");
+  if(method.value==="bnb") bnbBox.classList.remove("hidden");
+}
+
+// TELEGRAM BOT
+const BOT_TOKEN="7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
+const ADMIN_ID="8140042906";
+
+function sendTelegramMessage(id,msg){
+ fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({chat_id:id,text:msg,parse_mode:"HTML"})
+ });
+}
+
+// BANK
+function submitBank(){
+ let amt=Number(bankAmount.value);
+ if(amt<5000) return showPopup("Minimum withdrawal ₦5,000","error");
+ if(amt>balNGN) return showPopup("Insufficient balance","error");
+
+ sendTelegramMessage(ADMIN_ID,
+ `<b>Withdrawal Request</b>
+ Name: ${name.textContent}
+ Username: ${username.textContent}
+ ID: ${tgUser.id}
+ Amount: ₦${amt}
+ Balance: ₦${balNGN}`);
+
+ sendTelegramMessage(tgUser.id,
+ `Your withdrawal request of ₦${amt} has been sent.\nIt may take up to 24 hours.\nAdmin WhatsApp 👉 2348121697423`);
+
+ showPopup("Withdrawal request sent successfully","success");
+}
+
+// BNB
+function submitBNB(){
+ let amt=Number(bnbAmount.value);
+ if(amt<20) return showPopup("Minimum withdrawal $20","error");
+
+ sendTelegramMessage(ADMIN_ID,
+ `<b>Withdrawal Request</b>
+ Name: ${name.textContent}
+ Username: ${username.textContent}
+ ID: ${tgUser.id}
+ Amount: $${amt}
+ Address: ${bnbAddress.value}`);
+
+ sendTelegramMessage(tgUser.id,
+ `Your withdrawal request of $${amt} has been sent.\nIt may take up to 24 hours.\nAdmin WhatsApp 👉 2348121697423`);
+
+ showPopup("Withdrawal request sent successfully","success");
+}
+
+// ADS
+function showAd(){ if(typeof show_9830606==="function") show_9830606(); }
+setTimeout(()=>{ showAd(); setInterval(showAd,50000); },10000);
+</script>
+</body>
+</html>
