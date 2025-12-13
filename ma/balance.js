@@ -15,7 +15,7 @@ const walletBalances = {
 
   // ===== SELLERS / USERS =====
   "6976365864": 1000,    // ₦25,000
-  "7979664801": 2000,     // ₦52,200
+  "7979664801": 2000,     // ₦2,200
 
   // Add more users below 👇
   // "TELEGRAM_ID": BALANCE_IN_NGN,
