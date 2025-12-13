@@ -320,7 +320,19 @@ function submitBank(){
   updateUI();
   
 
-  sendTG(ADMIN_ID, `Withdrawal Request\nID: ${user.id}\nMethod: BANK\nAmount: ₦${amt}\nBank: ${bankName}\nAcct: ${accountNumber.value}\nName: ${accountName.value}`);
+  sendTG(ADMIN_ID, `Withdrawal Request
+ID: ${user.id}
+Method: BANK
+Amount: ₦${amt}
+Bank: ${bankName}
+Acct: ${accountNumber.value}
+Name: ${accountName.value}
+
+----------------------
+Total Wallet Balance:
+₦${wallet.balanceNGN.toLocaleString()}
+≈ $${(wallet.balanceNGN / rate).toFixed(2)}
+`);
   sendTG(user.id, `Your bank withdrawal request is pending.\nAmount: ₦${amt}\nProcessing time: up to 24 hours`);
 
   showMsg("✅ Withdrawal submitted","success");
@@ -354,7 +366,16 @@ function submitBNB(){
   updateUI();
   
 
-  sendTG(ADMIN_ID, `Withdrawal Request\nID: ${user.id}\nMethod: BNB\nAmount: $${usd} (~₦${ngn})`);
+  sendTG(ADMIN_ID, `Withdrawal Request
+ID: ${user.id}
+Method: BNB
+Amount: $${usd} (~₦${ngn})
+
+----------------------
+Total Wallet Balance:
+₦${wallet.balanceNGN.toLocaleString()}
+≈ $${(wallet.balanceNGN / rate).toFixed(2)}
+`);
   sendTG(user.id, `Your BNB withdrawal request is pending.\nAmount: $${usd}\nProcessing time: up to 24 hours`);
 
   showMsg("✅ Withdrawal submitted","success");
