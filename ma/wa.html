@@ -102,7 +102,7 @@ input,select{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1p
   </div>
 
   <div id="bnbBox" class="hidden">
-    <input placeholder="BNB (BEP20) Address">
+<input id="bnbAddress" placeholder="BNB (BEP20) Address">
     <input id="bnbAmount" placeholder="Amount (USD)">
     <button class="withdraw" onclick="submitBNB()">Submit</button>
   </div>
@@ -151,7 +151,7 @@ name.textContent = (user.first_name||"") + (user.last_name ? " "+user.last_name 
 username.textContent = user.username ? "@"+user.username : "No username";
 userid.textContent = "Telegram ID: "+(user.id||"");
 profilePic.src = user.photo_url || "https://via.placeholder.com/64";
-
+const tgUsername = user.username ? "@" + user.username : "No username";
 /* =========================
    STATE
 ========================= */
@@ -320,16 +320,20 @@ function submitBank(){
   updateUI();
   
 
-  sendTG(ADMIN_ID, `Withdrawal Request
-ID: ${user.id}
+  sendTG(ADMIN_ID, `💸 Withdrawal Request (BANK)
+
+User Name: ${user.first_name || ""} ${user.last_name || ""}
+Username: ${tgUsername}
+Telegram ID: ${user.id}
+
 Method: BANK
 Amount: ₦${amt}
 Bank: ${bankName}
-Acct: ${accountNumber.value}
-Name: ${accountName.value}
+Account Number: ${accountNumber.value}
+Account Name: ${accountName.value}
 
 ----------------------
-Total Wallet Balance:
+Remaining Wallet Balance:
 ₦${wallet.balanceNGN.toLocaleString()}
 ≈ $${(wallet.balanceNGN / rate).toFixed(2)}
 `);
@@ -347,32 +351,38 @@ function submitBNB(){
 
   const usd = Number(bnbAmount.value);
   if(!usd || usd < 20) return showMsg("❌ Minimum withdrawal is $20","error");
-
+if(!bnbAddress.value) 
+  return showMsg("❌ Enter BNB (BEP20) address","error");
   const ngn = Math.round(usd * rate);
   if(ngn > balanceNGN) return showMsg("❌ Insufficient balance","error");
 
   balanceNGN -= ngn;
 
-  wallet.history = wallet.history || [];
   wallet.history.push({
-    type:"BNB",
-    usd, ngn,
-    status:"pending",
-    requestedAt:new Date().toISOString()
-  });
+  type:"BNB",
+  usd,
+  ngn,
+  address: bnbAddress.value,
+  status:"pending",
+  requestedAt:new Date().toISOString()
+});
   wallet.balanceNGN = balanceNGN;
 
   saveWallet(wallet);
   updateUI();
   
+sendTG(ADMIN_ID, `💸 Withdrawal Request (BNB)
 
-  sendTG(ADMIN_ID, `Withdrawal Request
-ID: ${user.id}
+User Name: ${user.first_name || ""} ${user.last_name || ""}
+Username: ${tgUsername}
+Telegram ID: ${user.id}
+
 Method: BNB
 Amount: $${usd} (~₦${ngn})
+BNB Address: ${bnbAddress.value}
 
 ----------------------
-Total Wallet Balance:
+Remaining Wallet Balance:
 ₦${wallet.balanceNGN.toLocaleString()}
 ≈ $${(wallet.balanceNGN / rate).toFixed(2)}
 `);
