@@ -120,31 +120,24 @@ fetch("https://open.er-api.com/v6/latest/USD")
   .then(d=>rate=d.rates.NGN||1500)
   .catch(()=>rate=1500);
 
-/* ===== BALANCE DATABASE (ADMIN SOURCE) ===== */
+/* ===== BALANCE DATABASE ===== */
 const adminBalance = walletBalances[tgUser.id] || 0;
 
 /* ===== STORAGE ===== */
 const STORE_KEY = "withdrawals_"+tgUser.id;
 let withdrawals = JSON.parse(localStorage.getItem(STORE_KEY)) || [];
 
-/* ===== SYNC SUCCESS (BALANCE MUST MATCH SNAPSHOT) ===== */
+/* ===== SYNC SUCCESS ===== */
 withdrawals = withdrawals.map(w=>{
-  if(
-    w.status === "PENDING" &&
-    typeof w.expectedBalance === "number" &&
-    w.expectedBalance === adminBalance
-  ){
+  if(w.status==="PENDING" && w.expectedBalance === adminBalance){
     return {...w,status:"SUCCESS",approvedAt:new Date().toISOString()};
   }
   return w;
 });
-localStorage.setItem(STORE_KEY, JSON.stringify(withdrawals));
+localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
 
 /* ===== CALC ===== */
-const pendingTotal = withdrawals
-  .filter(w=>w.status==="PENDING")
-  .reduce((s,w)=>s+w.amountNGN,0);
-
+const pendingTotal = withdrawals.filter(w=>w.status==="PENDING").reduce((s,w)=>s+w.amountNGN,0);
 const available = adminBalance - pendingTotal;
 
 /* ===== UI ===== */
@@ -163,6 +156,30 @@ function updateUI(){
 }
 updateUI();
 
+/* ===== CENTER MESSAGE (NO DESIGN CHANGE) ===== */
+function showCenterMessage(text, type){
+  let box = document.getElementById("centerMsg");
+  if(!box){
+    box=document.createElement("div");
+    box.id="centerMsg";
+    box.style.position="fixed";
+    box.style.top="50%";
+    box.style.left="50%";
+    box.style.transform="translate(-50%,-50%)";
+    box.style.padding="18px 22px";
+    box.style.borderRadius="12px";
+    box.style.fontWeight="bold";
+    box.style.zIndex="9999";
+    box.style.boxShadow="0 8px 22px rgba(0,0,0,.25)";
+    document.body.appendChild(box);
+  }
+  box.style.background = type==="success"?"#d4edda":"#f8d7da";
+  box.style.color = type==="success"?"#155724":"#721c24";
+  box.style.border = type==="success"?"2px solid #28a745":"2px solid #dc3545";
+  box.textContent = text;
+  setTimeout(()=>box.remove(),3000);
+}
+
 /* ===== WITHDRAW UI ===== */
 function openWithdraw(){withdrawBox.classList.remove("hidden")}
 function closeWithdraw(){withdrawBox.classList.add("hidden")}
@@ -174,33 +191,37 @@ function switchMethod(){
 /* ===== WITHDRAW ACTIONS ===== */
 function submitBank(){
   const amt=Number(bankAmount.value);
-  if(amt<5000||amt>available) return alert("Invalid amount");
+  if(amt<5000) return showCenterMessage("❌ Minimum withdrawal is ₦5,000","error");
+  if(amt>available) return showCenterMessage("❌ Insufficient balance","error");
 
   withdrawals.push({
     method:"BANK",
     amountNGN:amt,
     status:"PENDING",
-    expectedBalance: adminBalance - amt,
+    expectedBalance: adminBalance-amt,
     date:new Date().toISOString()
   });
   localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
   updateUI();
+  showCenterMessage("✅ Withdrawal request sent","success");
 }
 
 function submitBNB(){
   const usd=Number(bnbAmount.value);
   const ngn=Math.round(usd*rate);
-  if(usd<20||ngn>available) return alert("Invalid amount");
+  if(usd<20) return showCenterMessage("❌ Minimum withdrawal is $20","error");
+  if(ngn>available) return showCenterMessage("❌ Insufficient balance","error");
 
   withdrawals.push({
     method:"BNB",
     amountNGN:ngn,
     status:"PENDING",
-    expectedBalance: adminBalance - ngn,
+    expectedBalance: adminBalance-ngn,
     date:new Date().toISOString()
   });
   localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
   updateUI();
+  showCenterMessage("✅ Withdrawal request sent","success");
 }
 </script>
 
