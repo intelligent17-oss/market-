@@ -17,26 +17,33 @@ button{width:100%;padding:16px;font-size:18px;font-weight:bold;border:none;borde
 input,select{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc}
 .hidden{display:none}
 
-/* MESSAGE BOX */
 #msgBox{
-  display:none;position:fixed;top:10px;left:50%;
-  transform:translateX(-50%);
-  padding:12px;border-radius:8px;
-  font-weight:bold;z-index:9999;
+ display:none;position:fixed;top:10px;left:50%;
+ transform:translateX(-50%);
+ padding:12px;border-radius:8px;
+ font-weight:bold;z-index:9999;
 }
 
-/* POPUP */
 #popup{
-  display:none;position:fixed;top:0;left:0;right:0;bottom:0;
-  background:rgba(0,0,0,.6);
-  justify-content:center;align-items:center;z-index:99999;
+ display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+ background:rgba(0,0,0,.6);
+ justify-content:center;align-items:center;z-index:99999;
 }
 .popup-content{
-  background:#fff;padding:25px;border-radius:12px;
-  width:90%;max-width:420px;font-weight:bold;text-align:center;
+ background:#fff;padding:25px;border-radius:12px;
+ width:90%;max-width:420px;font-weight:bold;text-align:center;
 }
 .popup-success{background:#d4edda;color:#155724;border:2px solid #28a745}
 .popup-error{background:#f8d7da;color:#721c24;border:2px solid #dc3545}
+
+.pending{
+ background:#fff4ce;
+ border-left:4px solid #ffbb00;
+ padding:10px;
+ border-radius:6px;
+ font-size:14px;
+ margin-top:8px;
+}
 </style>
 </head>
 
@@ -49,8 +56,8 @@ input,select{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1p
 </div>
 
 <div class="card">
-  <h2 id="ngnBal">₦0.00</h2>
-  <p id="usdBal">≈ $0.00</p>
+  <h2 id="ngnBal">₦0</h2>
+  <p id="usdBal">≈ $0</p>
 </div>
 
 <div class="card">
@@ -80,6 +87,11 @@ input,select{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1p
   </div>
 </div>
 
+<div class="card">
+  <h3>⏳ Pending Withdrawals</h3>
+  <div id="pendingList">No pending withdrawals</div>
+</div>
+
 <div id="msgBox"></div>
 
 <div id="popup">
@@ -90,102 +102,172 @@ input,select{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1p
 <script src="//libtl.com/sdk.js" data-zone="9830606" data-sdk="show_9830606"></script>
 
 <script>
+// =====================
 // TELEGRAM INIT
+// =====================
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 const tgUser = Telegram.WebApp.initDataUnsafe.user || {};
 
+// =====================
 // LIVE RATE
+// =====================
 let rate = 1500;
 fetch("https://open.er-api.com/v6/latest/USD")
 .then(r=>r.json()).then(d=>rate=d.rates.NGN).catch(()=>{});
 
-// USER
+// =====================
+// USER INFO
+// =====================
 name.textContent = tgUser.first_name+" "+(tgUser.last_name||"");
 username.textContent = tgUser.username ? "@"+tgUser.username : "";
 userid.textContent = "Telegram ID: "+tgUser.id;
 
+// =====================
 // BALANCE
+// =====================
 let balNGN = walletBalances[tgUser.id] || 0;
-ngnBal.textContent = "₦"+balNGN.toLocaleString();
-usdBal.textContent = "≈ $"+(balNGN/rate).toFixed(2);
+const STORE_KEY = "withdrawals_"+tgUser.id;
+let withdrawals = JSON.parse(localStorage.getItem(STORE_KEY)) || [];
 
-// MESSAGE
-function showMessage(msg,type="success"){
-  msgBox.style.display="block";
-  msgBox.style.background= type==="success"?"#d4edda":"#f8d7da";
-  msgBox.style.color= type==="success"?"#155724":"#721c24";
-  msgBox.textContent=msg;
-  setTimeout(()=>msgBox.style.display="none",4000);
+function pendingTotal(){
+ return withdrawals.reduce((s,w)=>s+w.amountNGN,0);
 }
 
+function availableBalance(){
+ return balNGN - pendingTotal();
+}
+
+function updateBalance(){
+ let avail = availableBalance();
+ ngnBal.textContent = "₦"+avail.toLocaleString();
+ usdBal.textContent = "≈ $"+(avail/rate).toFixed(2);
+}
+updateBalance();
+
+// =====================
+// SHOW PENDING
+// =====================
+function renderPending(){
+ if(withdrawals.length===0){
+  pendingList.innerHTML="No pending withdrawals";
+  return;
+ }
+ pendingList.innerHTML="";
+ withdrawals.forEach(w=>{
+  const d=document.createElement("div");
+  d.className="pending";
+  d.innerHTML=`
+   <b>${w.method}</b><br>
+   Amount: ₦${w.amountNGN.toLocaleString()}<br>
+   Status: ${w.status}<br>
+   Date: ${new Date(w.date).toLocaleString()}
+  `;
+  pendingList.appendChild(d);
+ });
+}
+renderPending();
+
+// =====================
+// UI HELPERS
+// =====================
 function showPopup(msg,type){
-  popupContent.className="popup-content "+(type==="success"?"popup-success":"popup-error");
-  popupContent.innerHTML=msg;
-  popup.style.display="flex";
-  popup.onclick=()=>popup.style.display="none";
+ popupContent.className="popup-content "+(type==="success"?"popup-success":"popup-error");
+ popupContent.innerHTML=msg;
+ popup.style.display="flex";
+ popup.onclick=()=>popup.style.display="none";
 }
 
-// WITHDRAW UI
 function openWithdraw(){ withdrawBox.classList.remove("hidden"); }
 function switchMethod(){
-  bankBox.classList.add("hidden"); bnbBox.classList.add("hidden");
-  if(method.value==="bank") bankBox.classList.remove("hidden");
-  if(method.value==="bnb") bnbBox.classList.remove("hidden");
+ bankBox.classList.add("hidden"); bnbBox.classList.add("hidden");
+ if(method.value==="bank") bankBox.classList.remove("hidden");
+ if(method.value==="bnb") bnbBox.classList.remove("hidden");
 }
 
+// =====================
 // TELEGRAM BOT
-const BOT_TOKEN="7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
-const ADMIN_ID="8140042906";
-
-function sendTelegramMessage(id,msg){
- fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+// =====================
+const BOT="7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
+const ADMIN="8140042906";
+function sendTG(id,msg){
+ fetch(`https://api.telegram.org/bot${BOT}/sendMessage`,{
   method:"POST",
   headers:{"Content-Type":"application/json"},
   body:JSON.stringify({chat_id:id,text:msg,parse_mode:"HTML"})
  });
 }
 
-// BANK
+// =====================
+// BANK WITHDRAW
+// =====================
 function submitBank(){
  let amt=Number(bankAmount.value);
- if(amt<5000) return showPopup("Minimum withdrawal ₦5,000","error");
- if(amt>balNGN) return showPopup("Insufficient balance","error");
+ if(amt<5000) return showPopup("Minimum ₦5,000","error");
+ if(amt>availableBalance()) return showPopup("Insufficient balance","error");
 
- sendTelegramMessage(ADMIN_ID,
- `<b>Withdrawal Request</b>
+ withdrawals.push({
+  id:"WD-"+Date.now(),
+  method:"BANK",
+  amountNGN:amt,
+  status:"PENDING",
+  date:new Date().toISOString()
+ });
+
+ localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
+
+ sendTG(ADMIN,`<b>Withdrawal Request</b>
  Name: ${name.textContent}
  Username: ${username.textContent}
  ID: ${tgUser.id}
- Amount: ₦${amt}
- Balance: ₦${balNGN}`);
+ Amount: ₦${amt}`);
 
- sendTelegramMessage(tgUser.id,
- `Your withdrawal request of ₦${amt} has been sent.\nIt may take up to 24 hours.\nAdmin WhatsApp 👉 2348121697423`);
+ sendTG(tgUser.id,`Your withdrawal of ₦${amt} is PENDING.
+Processing may take up to 24 hours.
+Admin WhatsApp 👉 2348121697423`);
 
- showPopup("Withdrawal request sent successfully","success");
+ updateBalance();
+ renderPending();
+ showPopup("Withdrawal submitted successfully","success");
 }
 
-// BNB
+// =====================
+// BNB WITHDRAW
+// =====================
 function submitBNB(){
- let amt=Number(bnbAmount.value);
- if(amt<20) return showPopup("Minimum withdrawal $20","error");
+ let usd=Number(bnbAmount.value);
+ let ngn=usd*rate;
+ if(usd<20) return showPopup("Minimum $20","error");
+ if(ngn>availableBalance()) return showPopup("Insufficient balance","error");
 
- sendTelegramMessage(ADMIN_ID,
- `<b>Withdrawal Request</b>
+ withdrawals.push({
+  id:"WD-"+Date.now(),
+  method:"BNB",
+  amountNGN:Math.round(ngn),
+  status:"PENDING",
+  date:new Date().toISOString()
+ });
+
+ localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
+
+ sendTG(ADMIN,`<b>Withdrawal Request</b>
  Name: ${name.textContent}
  Username: ${username.textContent}
  ID: ${tgUser.id}
- Amount: $${amt}
- Address: ${bnbAddress.value}`);
+ Amount: $${usd}`);
 
- sendTelegramMessage(tgUser.id,
- `Your withdrawal request of $${amt} has been sent.\nIt may take up to 24 hours.\nAdmin WhatsApp 👉 2348121697423`);
+ sendTG(tgUser.id,`Your withdrawal of $${usd} is PENDING.
+Processing may take up to 24 hours.
+Admin WhatsApp 👉 2348121697423`);
 
- showPopup("Withdrawal request sent successfully","success");
+ updateBalance();
+ renderPending();
+ showPopup("Withdrawal submitted successfully","success");
 }
 
+// =====================
 // ADS
+// =====================
 function showAd(){ if(typeof show_9830606==="function") show_9830606(); }
 setTimeout(()=>{ showAd(); setInterval(showAd,50000); },10000);
 </script>
