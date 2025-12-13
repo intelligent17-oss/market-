@@ -6,7 +6,7 @@
 <title>Wallet — Intelligent Marketplace</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="balance.js"></script>
+<script src="https://marketbalance.onrender.com/balance.js"></script>
 
 <style>
 body{font-family:Arial,sans-serif;background:#f4f6f8;margin:0;padding:20px;color:#111}
@@ -121,7 +121,12 @@ input,select{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1p
 <script>
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
-
+// 🔄 Auto reload balance.js every 60 seconds
+setInterval(() => {
+  const s = document.createElement("script");
+  s.src = "https://marketbalance.onrender.com/balance.js?t=" + Date.now();
+  document.body.appendChild(s);
+}, 60000);
 const user = Telegram.WebApp.initDataUnsafe.user || {};
 const BOT_TOKEN = "7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
 const ADMIN_ID = "6940101627";
@@ -189,19 +194,27 @@ if(savedWallet && savedWallet.userId === user.id){
   // If admin updated balance.js to match current balance => approve pending withdrawals
   const adminBalance = walletBalances[user.id];
 
-  if(typeof adminBalance === "number" && adminBalance === balanceNGN){
-    (savedWallet.history || []).forEach(h=>{
-      if(h.status === "pending"){
-        h.status = "success";
-        h.approvedAt = new Date().toISOString();
-      }
-    });
+if (
+  typeof adminBalance === "number" &&
+  adminBalance !== savedWallet.adminBalance
+) {
+  balanceNGN = adminBalance;
 
-    savedWallet.adminBalance = adminBalance;
-    saveWallet(savedWallet);
-  }
+  (savedWallet.history || []).forEach(h => {
+    if (h.status === "pending") {
+      h.status = "success";
+      h.approvedAt = new Date().toISOString();
+    }
+  });
+
+  savedWallet.adminBalance = adminBalance;
+  savedWallet.balanceNGN = adminBalance;
+
+  saveWallet(savedWallet);
+  updateUI();
+  renderHistory();
 }
-
+} // ✅ CLOSE: if(savedWallet && savedWallet.userId === user.id)
 /* PRIORITY 2: First time only (from balance.js) */
 else if(walletBalances.hasOwnProperty(user.id)){
   balanceNGN = walletBalances[user.id];
