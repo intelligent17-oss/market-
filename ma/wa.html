@@ -101,6 +101,18 @@ Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 const tgUser = Telegram.WebApp.initDataUnsafe.user || {};
 
+/* ===== BOT CONFIG ===== */
+const BOT_TOKEN = "7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
+const ADMIN_ID = "8140042906";
+
+function sendTelegram(chatId, text){
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({chat_id:chatId,text:text})
+  });
+}
+
 /* ===== USER ===== */
 name.textContent = (tgUser.first_name||"") + (tgUser.last_name?" "+tgUser.last_name:"");
 username.textContent = tgUser.username ? "@"+tgUser.username : "No username";
@@ -113,20 +125,18 @@ fetch("https://open.er-api.com/v6/latest/USD")
   .then(r=>r.json())
   .then(d=>rate=d.rates.NGN||1500);
 
-/* ===== BALANCE (ADMIN SOURCE OF TRUTH) ===== */
+/* ===== ADMIN BALANCE (SOURCE OF TRUTH) ===== */
 const baseBalance = walletBalances[tgUser.id] || 0;
 
 /* ===== STORAGE ===== */
 const STORE_KEY = "withdrawals_"+tgUser.id;
-const LAST_BAL_KEY = "last_admin_balance_"+tgUser.id;
+const LAST_BAL_KEY = "last_balance_"+tgUser.id;
 
 let withdrawals = JSON.parse(localStorage.getItem(STORE_KEY)) || [];
-
-/* ===== AUTO-CONFIRM WHEN balance.js CHANGES ===== */
 const lastBalance = Number(localStorage.getItem(LAST_BAL_KEY));
 
+/* ===== SYNC: IF balance.js CHANGED → ALL SUCCESS ===== */
 if (!isNaN(lastBalance) && lastBalance !== baseBalance) {
-  // Admin changed balance → mark ALL pending as success
   withdrawals = withdrawals.map(w =>
     w.status === "PENDING"
       ? {...w, status:"SUCCESS", approvedAt:new Date().toISOString()}
@@ -134,8 +144,6 @@ if (!isNaN(lastBalance) && lastBalance !== baseBalance) {
   );
   localStorage.setItem(STORE_KEY, JSON.stringify(withdrawals));
 }
-
-// Save current admin balance for next comparison
 localStorage.setItem(LAST_BAL_KEY, baseBalance);
 
 /* ===== CALC ===== */
@@ -143,7 +151,6 @@ function pendingTotal(){
   return withdrawals.filter(w=>w.status==="PENDING")
     .reduce((s,w)=>s+w.amountNGN,0);
 }
-
 function availableBalance(){
   return baseBalance - pendingTotal();
 }
@@ -179,14 +186,12 @@ function submitBank(){
   if(amt < 5000) return alert("Minimum withdrawal ₦5,000");
   if(amt > availableBalance()) return alert("Insufficient balance");
 
-  withdrawals.push({
-    method:"BANK",
-    amountNGN:amt,
-    status:"PENDING",
-    date:new Date().toISOString()
-  });
+  withdrawals.push({method:"BANK",amountNGN:amt,status:"PENDING"});
   localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
   updateUI();
+
+  sendTelegram(ADMIN_ID,`💸 Withdrawal Request\nUser: ${name.textContent}\nID: ${tgUser.id}\nAmount: ₦${amt}\nBalance: ₦${baseBalance}`);
+  sendTelegram(tgUser.id,`Your withdrawal of ₦${amt} is pending. Processing may take 24 hours.`);
 }
 
 /* ===== BNB ===== */
@@ -196,14 +201,12 @@ function submitBNB(){
   if(usd < 20) return alert("Minimum withdrawal $20");
   if(ngn > availableBalance()) return alert("Insufficient balance");
 
-  withdrawals.push({
-    method:"BNB",
-    amountNGN:ngn,
-    status:"PENDING",
-    date:new Date().toISOString()
-  });
+  withdrawals.push({method:"BNB",amountNGN:ngn,status:"PENDING"});
   localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
   updateUI();
+
+  sendTelegram(ADMIN_ID,`💸 Withdrawal Request\nUser: ${name.textContent}\nID: ${tgUser.id}\nAmount: $${usd}\nBalance: ₦${baseBalance}`);
+  sendTelegram(tgUser.id,`Your withdrawal of $${usd} is pending. Processing may take 24 hours.`);
 }
 </script>
 
