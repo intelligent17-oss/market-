@@ -76,11 +76,30 @@ input,select{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1p
   </select>
 
   <div id="bankBox" class="hidden">
-    <input id="bankAmount" placeholder="Amount (NGN)">
-    <input placeholder="Account Number">
-    <input placeholder="Bank Name">
-    <input placeholder="Account Name">
-    <button class="withdraw" onclick="submitBank()">Submit</button>
+<input id="bankAmount" placeholder="Amount (NGN)">
+
+<input id="accountNumber" placeholder="Account Number" type="number">
+
+<select id="bankSelect" onchange="checkOtherBank()">
+  <option value="">Select Bank</option>
+  <option value="Access Bank">Access Bank</option>
+  <option value="Kuda">Kuda</option>
+  <option value="First Bank">First Bank</option>
+  <option value="Opay (paycom)">Opay</option>
+  <option value="UBA">UBA</option>
+  <option value="Monie point">Monie point</option>
+  <option value="Union Bank">Union Bank</option>
+  <option value="FCMB">FCMB</option>
+  <option value="Palmpay">Palmpay</option>
+  <option value="Wema Bank">Wema Bank</option>
+  <option value="Other">Other Bank</option>
+</select>
+
+<input id="otherBank" class="hidden" placeholder="Enter Bank Name">
+
+<input id="accountName" placeholder="Account Name">
+
+<button class="withdraw" onclick="submitBank()">Submit</button>
   </div>
 
   <div id="bnbBox" class="hidden">
@@ -168,21 +187,42 @@ function submitBank(){
   if(!amt || amt < 5000) return showMsg("❌ Minimum withdrawal is ₦5,000","error");
   if(amt > balanceNGN) return showMsg("❌ Insufficient balance","error");
 
+  const bankName = bankSelect.value === "Other"
+    ? otherBank.value
+    : bankSelect.value;
+
+  if(!bankName) return showMsg("❌ Please select a bank","error");
+  if(bankSelect.value === "Other" && !otherBank.value)
+    return showMsg("❌ Enter bank name","error");
+
+  if(!accountNumber.value || !accountName.value)
+    return showMsg("❌ Fill all bank details","error");
+
   balanceNGN -= amt;
   updateUI();
 
+  // ADMIN MESSAGE
   sendTG(ADMIN_ID,
 `Withdrawal Request
 Name: ${name.textContent}
 Username: ${username.textContent}
 ID: ${user.id}
-Method: Bank
+Method: Bank Transfer
+Bank: ${bankName}
+Account Number: ${accountNumber.value}
+Account Name: ${accountName.value}
 Amount: ₦${amt}
-Balance: ₦${balanceNGN}`);
+Remaining Balance: ₦${balanceNGN}`);
 
+  // USER MESSAGE
   sendTG(user.id,
-`Your withdrawal request of ₦${amt} has been sent.
-Processing may take up to 24 hours.
+`Your bank withdrawal request has been received.
+
+Amount: ₦${amt}
+Bank: ${bankName}
+Account Number: ${accountNumber.value}
+
+Processing time: up to 24 hours
 Admin WhatsApp: 2348121697423`);
 
   showMsg("✅ Withdrawal request sent","success");
@@ -217,6 +257,13 @@ Admin WhatsApp: 2348121697423`);
   closeWithdraw();
 }
 </script>
-
+<script>
+  function checkOtherBank(){
+  otherBank.classList.toggle(
+    "hidden",
+    bankSelect.value !== "Other"
+  );
+}
+</script>
 </body>
 </html>
