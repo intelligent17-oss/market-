@@ -115,32 +115,44 @@ if(tgUser.photo_url) profilePic.src = tgUser.photo_url;
 
 /* ===== RATE ===== */
 let rate = 1500;
-fetch("https://open.er-api.com/v6/latest/USD").then(r=>r.json()).then(d=>rate=d.rates.NGN||1500);
+fetch("https://open.er-api.com/v6/latest/USD")
+  .then(r=>r.json())
+  .then(d=>rate=d.rates.NGN||1500)
+  .catch(()=>rate=1500);
 
-/* ===== BALANCE DATABASE ===== */
-let balNGN = walletBalances[tgUser.id] || 0;
+/* ===== BALANCE DATABASE (ADMIN SOURCE) ===== */
+const adminBalance = walletBalances[tgUser.id] || 0;
 
 /* ===== STORAGE ===== */
 const STORE_KEY = "withdrawals_"+tgUser.id;
-const LAST_BAL_KEY = "last_admin_balance_"+tgUser.id;
 let withdrawals = JSON.parse(localStorage.getItem(STORE_KEY)) || [];
 
-/* ===== SYNC WITH ADMIN (ONLY WHEN balance.js CHANGES) ===== */
-const lastKnown = Number(localStorage.getItem(LAST_BAL_KEY));
-if(!isNaN(lastKnown) && balNGN !== lastKnown && balNGN < lastKnown){
-  withdrawals = withdrawals.map(w =>
-    w.status==="PENDING" ? {...w,status:"SUCCESS",approvedAt:new Date().toISOString()} : w
-  );
-  localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
-}
-localStorage.setItem(LAST_BAL_KEY, balNGN);
+/* ===== SYNC SUCCESS (BALANCE MUST MATCH SNAPSHOT) ===== */
+withdrawals = withdrawals.map(w=>{
+  if(
+    w.status === "PENDING" &&
+    typeof w.expectedBalance === "number" &&
+    w.expectedBalance === adminBalance
+  ){
+    return {...w,status:"SUCCESS",approvedAt:new Date().toISOString()};
+  }
+  return w;
+});
+localStorage.setItem(STORE_KEY, JSON.stringify(withdrawals));
+
+/* ===== CALC ===== */
+const pendingTotal = withdrawals
+  .filter(w=>w.status==="PENDING")
+  .reduce((s,w)=>s+w.amountNGN,0);
+
+const available = adminBalance - pendingTotal;
 
 /* ===== UI ===== */
 function updateUI(){
-  ngnBal.textContent = "₦"+balNGN.toLocaleString();
-  usdBal.textContent = "≈ $"+(balNGN/rate).toFixed(2);
-  pillBase.textContent = "Base: ₦"+balNGN.toLocaleString();
-  pillPending.textContent = "Pending: ₦"+withdrawals.filter(w=>w.status==="PENDING").reduce((s,w)=>s+w.amountNGN,0).toLocaleString();
+  ngnBal.textContent = "₦"+Math.max(0,available).toLocaleString();
+  usdBal.textContent = "≈ $"+(Math.max(0,available)/rate).toFixed(2);
+  pillBase.textContent = "Base: ₦"+adminBalance.toLocaleString();
+  pillPending.textContent = "Pending: ₦"+pendingTotal.toLocaleString();
 
   pendingList.innerHTML = withdrawals.length
     ? withdrawals.slice().reverse().map(w=>`
@@ -151,7 +163,7 @@ function updateUI(){
 }
 updateUI();
 
-/* ===== WITHDRAW ===== */
+/* ===== WITHDRAW UI ===== */
 function openWithdraw(){withdrawBox.classList.remove("hidden")}
 function closeWithdraw(){withdrawBox.classList.add("hidden")}
 function switchMethod(){
@@ -159,22 +171,38 @@ function switchMethod(){
   bnbBox.classList.toggle("hidden",method.value!=="bnb");
 }
 
+/* ===== WITHDRAW ACTIONS ===== */
 function submitBank(){
   const amt=Number(bankAmount.value);
-  if(amt<5000||amt>balNGN) return alert("Invalid amount");
-  withdrawals.push({method:"BANK",amountNGN:amt,status:"PENDING",date:new Date().toISOString()});
+  if(amt<5000||amt>available) return alert("Invalid amount");
+
+  withdrawals.push({
+    method:"BANK",
+    amountNGN:amt,
+    status:"PENDING",
+    expectedBalance: adminBalance - amt,
+    date:new Date().toISOString()
+  });
   localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
   updateUI();
 }
 
 function submitBNB(){
   const usd=Number(bnbAmount.value);
-  const ngn=usd*rate;
-  if(usd<20||ngn>balNGN) return alert("Invalid amount");
-  withdrawals.push({method:"BNB",amountNGN:Math.round(ngn),status:"PENDING",date:new Date().toISOString()});
+  const ngn=Math.round(usd*rate);
+  if(usd<20||ngn>available) return alert("Invalid amount");
+
+  withdrawals.push({
+    method:"BNB",
+    amountNGN:ngn,
+    status:"PENDING",
+    expectedBalance: adminBalance - ngn,
+    date:new Date().toISOString()
+  });
   localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
   updateUI();
 }
 </script>
+
 </body>
 </html>
