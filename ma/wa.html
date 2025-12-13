@@ -61,7 +61,12 @@ input,select{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1p
     <div class="pill" id="baseBal">Base: ₦0</div>
   </div>
 </div>
-
+<div class="card">
+  <h3>Withdrawal History</h3>
+  <div id="historyBox">
+    <i>No withdrawal history yet</i>
+  </div>
+</div>
 <div class="card">
   <button id="withdrawBtn" class="withdraw" onclick="openWithdraw()">Withdraw</button>
   <button class="sell" onclick="location.href='index.html'">Sell Products</button>
@@ -202,7 +207,33 @@ function updateUI(){
   baseBal.textContent = "Base: ₦"+balanceNGN.toLocaleString();
 }
 updateUI();
+function renderHistory(){
+  const wallet = loadWallet();
+  if(!wallet || !wallet.history || wallet.history.length === 0){
+    historyBox.innerHTML = "<i>No withdrawal history yet</i>";
+    return;
+  }
 
+  historyBox.innerHTML = wallet.history
+    .slice()
+    .reverse()
+    .map(h => `
+      <div style="
+        padding:10px;
+        margin-bottom:10px;
+        border-radius:8px;
+        background:#f7f7f7;
+        border-left:6px solid ${h.status === 'success' ? '#28a745' : '#ffc107'};
+      ">
+        <b>${h.type}</b><br>
+        Amount: ₦${h.amount || h.ngn}<br>
+        Status: <b>${h.status.toUpperCase()}</b><br>
+        Requested: ${new Date(h.requestedAt).toLocaleString()}
+        ${h.approvedAt ? `<br>Approved: ${new Date(h.approvedAt).toLocaleString()}` : ""}
+      </div>
+    `)
+    .join("");
+}
 /* message */
 function showMsg(text,type){
   msgBox.textContent=text;
@@ -253,6 +284,7 @@ function submitBank(){
 
   balanceNGN -= amt;
   updateUI();
+renderHistory();
   // SAVE TO LOCAL STORAGE (PENDING)
 const walletData = loadWallet() || {
   userId: user.id,
