@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wallet — Intelligent Marketplace</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://marketbalance.onrender.com/balance.js"></script>
+
+<style>
+body{font-family:Arial,sans-serif;background:#f4f6f8;margin:0;padding:20px;color:#111}
+h2{margin-bottom:10px}
+.card{background:#fff;padding:18px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.12);margin-bottom:14px}
+#userInfo{display:flex;gap:12px;align-items:center}
+#profilePic{width:64px;height:64px;border-radius:50%;object-fit:cover;background:#eee}
+.bal-big{font-size:34px;font-weight:900}
+.bal-sub{font-weight:bold;color:#555}
+.row{display:flex;gap:10px;margin-top:10px}
+.pill{padding:8px 10px;border-radius:10px;background:#eefaff;border:1px solid #8ed0ff;font-weight:bold}
+button{width:100%;padding:16px;font-size:17px;font-weight:bold;border:none;border-radius:10px;margin-top:10px;cursor:pointer}
+.withdraw{background:#28a745;color:#fff}
+.withdraw.locked{background:#aaa;cursor:not-allowed}
+.sell{background:#1a73e8;color:#fff}
+input,select{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc}
+.hidden{display:none}
+
+/* center message */
+.msg{
+  position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  padding:18px 22px;
+  border-radius:12px;
+  font-weight:bold;
+  z-index:9999;
+  box-shadow:0 10px 30px rgba(0,0,0,.3);
+}
+.msg.success{background:#d4edda;color:#155724}
+.msg.error{background:#f8d7da;color:#721c24}
+</style>
+</head>
+
+<body>
+
+<h2>Intelligent Marketplace — Wallet</h2>
+
+<div class="card" id="userInfo">
+  <img id="profilePic">
+  <div>
+    <div id="name"></div>
+    <div id="username"></div>
+    <div id="userid"></div>
+  </div>
+</div>
+
+<div class="card">
+  <b>Available Balance</b>
+  <div class="bal-big" id="ngnBal">₦0.00</div>
+  <div class="bal-sub" id="usdBal">≈ $0.00</div>
+  <div class="row">
+    <div class="pill" id="baseBal">Base: ₦0</div>
+  </div>
+</div>
+<div class="card">
+  <h3>Withdrawal History</h3>
+  <div id="historyBox">
+    <i>No withdrawal history yet</i>
+  </div>
+</div>
+<div class="card">
+  <button id="withdrawBtn" class="withdraw" onclick="openWithdraw()">Withdraw</button>
+  <button class="sell" onclick="location.href='index.html'">Sell Products</button>
+</div>
+
+<!-- Withdraw box -->
+<div class="card hidden" id="withdrawBox">
+  <select id="method" onchange="switchMethod()">
+    <option value="">Select withdrawal method</option>
+    <option value="bank">Bank Transfer</option>
+    <option value="bnb">BNB (BEP20)</option>
+  </select>
+
+  <div id="bankBox" class="hidden">
+<input id="bankAmount" placeholder="Amount (NGN)" type="number">
+
+<input id="accountNumber" placeholder="Account Number" type="number">
+
+<select id="bankSelect" onchange="checkOtherBank()">
+  <option value="">Select Bank</option>
+  <option value="Access Bank">Access Bank</option>
+  <option value="Kuda">Kuda</option>
+  <option value="First Bank">First Bank</option>
+  <option value="Opay (paycom)">Opay</option>
+  <option value="UBA">UBA</option>
+  <option value="Monie point">Monie point</option>
+  <option value="Union Bank">Union Bank</option>
+  <option value="FCMB">FCMB</option>
+  <option value="Palmpay">Palmpay</option>
+  <option value="Wema Bank">Wema Bank</option>
+  <option value="Other">Other Bank</option>
+</select>
+
+<input id="otherBank" class="hidden" placeholder="Enter Bank Name">
+
+<input id="accountName" placeholder="Account Name">
+
+<button class="withdraw" onclick="submitBank()">Submit</button>
+  </div>
+
+  <div id="bnbBox" class="hidden">
+    <input placeholder="BNB (BEP20) Address">
+    <input id="bnbAmount" placeholder="Amount (USD)">
+    <button class="withdraw" onclick="submitBNB()">Submit</button>
+  </div>
+
+  <button class="sell" onclick="closeWithdraw()">Close</button>
+</div>
+
+<div id="msgBox" class="msg hidden"></div>
+
+<script>
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
+// 🔄 Auto reload balance.js every 60 seconds
+setInterval(() => {
+  const s = document.createElement("script");
+  s.src = "https://marketbalance.onrender.com/balance.js?t=" + Date.now();
+  document.body.appendChild(s);
+}, 60000);
+const user = Telegram.WebApp.initDataUnsafe.user || {};
+const BOT_TOKEN = "7514817340:AAHUpE5ZPEUZkkM4rq4smoV_nzWfmwWBVGc";
+const ADMIN_ID = "6940101627";
+/* =====================================
+   PERMANENT WALLET STORAGE (FOREVER)
+===================================== */
+const WALLET_KEY = "IM_WALLET_FOREVER";
+/* =====================================
+   WITHDRAW HISTORY (SEPARATE STORAGE)
+===================================== */
+function historyKey(){
+  return "IM_WITHDRAW_HISTORY_" + user.id;
+}
+
+function loadHistory(){
+  try{
+    return JSON.parse(localStorage.getItem(historyKey())) || [];
+  }catch(e){
+    return [];
+  }
+}
+
+function saveHistory(entry){
+  const list = loadHistory();
+  list.push(entry);
+  localStorage.setItem(historyKey(), JSON.stringify(list));
+}
+
+function saveWallet(data){
+  localStorage.setItem(WALLET_KEY, JSON.stringify(data));
+}
+
+function loadWallet(){
+  const raw = localStorage.getItem(WALLET_KEY);
+  if(!raw) return null;
+  try{
+    return JSON.parse(raw);
+  }catch(e){
+    localStorage.removeItem(WALLET_KEY);
+    return null;
+  }
+}
+/* exchange rate */
+let rate = 1500;
+fetch("https://open.er-api.com/v6/latest/USD")
+.then(r=>r.json())
+.then(d=>rate=d.rates.NGN||1500);
+
+/* user info */
+name.textContent = (user.first_name||"") + (user.last_name?" "+user.last_name:"");
+username.textContent = user.username ? "@"+user.username : "No username";
+userid.textContent = "Telegram ID: "+(user.id||"");
+profilePic.src = user.photo_url || "https://via.placeholder.com/64";
+
+/* balance check (LOCAL STORAGE FOREVER + AUTO SUCCESS WHEN balance.js CHANGES) */
+const savedWallet = loadWallet();
+let balanceNGN = 0;
+let hasWallet = false;
+
+/* PRIORITY 1: Use LocalStorage */
+if(savedWallet && savedWallet.userId === user.id){
+  balanceNGN = savedWallet.balanceNGN;
+  hasWallet = true;
+
+  // If admin updated balance.js to match current balance => approve pending withdrawals
+  const adminBalance = walletBalances[user.id];
+
+if (
+  typeof adminBalance === "number" &&
+  adminBalance !== savedWallet.adminBalance
+) {
+  balanceNGN = adminBalance;
+
+  (savedWallet.history || []).forEach(h => {
+    if (h.status === "pending") {
+      h.status = "success";
+      h.approvedAt = new Date().toISOString();
+    }
+  });
+
+  savedWallet.adminBalance = adminBalance;
+  savedWallet.balanceNGN = adminBalance;
+
+  saveWallet(savedWallet);
+  updateUI();
+  renderHistory();
+}
+} // ✅ CLOSE: if(savedWallet && savedWallet.userId === user.id)
+/* PRIORITY 2: First time only (from balance.js) */
+else if(walletBalances.hasOwnProperty(user.id)){
+  balanceNGN = walletBalances[user.id];
+  hasWallet = true;
+
+  saveWallet({
+    userId: user.id,
+    adminBalance: balanceNGN,
+    balanceNGN: balanceNGN,
+    history: []
+  });
+}
+
+/* lock withdraw if no wallet */
+if(!hasWallet){
+  withdrawBtn.classList.add("locked");
+}
+
+/* UI */
+function updateUI(){
+  ngnBal.textContent = "₦"+balanceNGN.toLocaleString();
+  usdBal.textContent = "≈ $"+(balanceNGN/rate).toFixed(2);
+  baseBal.textContent = "Base: ₦"+balanceNGN.toLocaleString();
+}
+updateUI();
+
+function renderHistory(){
+  const history = loadHistory();
+
+  if(!history || history.length === 0){
+    historyBox.innerHTML = "<i>No withdrawal history yet</i>";
+    return;
+  }
+
+  historyBox.innerHTML = history
+    .slice()
+    .reverse()
+    .map((h, i) => `
+      <div style="
+        padding:14px;
+        margin-bottom:12px;
+        border-radius:10px;
+        background:#ffffff;
+        border-left:6px solid ${
+          h.status === 'success' ? '#28a745' :
+          h.status === 'pending' ? '#ffc107' : '#dc3545'
+        };
+        box-shadow:0 4px 10px rgba(0,0,0,.08);
+      ">
+        <div style="font-weight:bold;margin-bottom:4px;">
+          #${history.length - i} • ${h.type} Withdrawal
+        </div>
+
+        <div>💰 Amount: <b>₦${h.amount || h.ngn}</b></div>
+        <div>📌 Status: <b>${h.status.toUpperCase()}</b></div>
+        <div>🕒 Requested: ${new Date(h.requestedAt).toLocaleString()}</div>
+
+        ${h.bank ? `<div>🏦 Bank: ${h.bank}</div>` : ""}
+        ${h.approvedAt ? `<div>✅ Approved: ${new Date(h.approvedAt).toLocaleString()}</div>` : ""}
+      </div>
+    `)
+    .join("");
+}
+renderHistory();
+/* message */
+function showMsg(text,type){
+  msgBox.textContent=text;
+  msgBox.className="msg "+type;
+  msgBox.classList.remove("hidden");
+  setTimeout(()=>msgBox.classList.add("hidden"),3000);
+}
+
+/* withdraw UI */
+function openWithdraw(){
+  if(!hasWallet || balanceNGN < 5000){
+    showMsg("❌ The  Minimum balace to withdraw is NGN5000","error");
+    return;
+  }
+  withdrawBox.classList.remove("hidden");
+}
+function closeWithdraw(){withdrawBox.classList.add("hidden")}
+function switchMethod(){
+  bankBox.classList.toggle("hidden",method.value!=="bank");
+  bnbBox.classList.toggle("hidden",method.value!=="bnb");
+}
+
+/* telegram send */
+function sendTG(chatId,text){
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({chat_id:chatId,text})
+  });
+}
+
+/* BANK */
+function submitBank(){
+  const amt = Number(bankAmount.value);
+  if(!amt || amt < 5000) return showMsg("❌ Minimum withdrawal is ₦5,000","error");
+  if(amt > balanceNGN) return showMsg("❌ Insufficient balance","error");
+
+  const bankName = bankSelect.value === "Other"
+    ? otherBank.value
+    : bankSelect.value;
+
+  if(!bankName) return showMsg("❌ Please select a bank","error");
+  if(bankSelect.value === "Other" && !otherBank.value)
+    return showMsg("❌ Enter bank name","error");
+
+  if(!accountNumber.value || !accountName.value)
+    return showMsg("❌ Fill all bank details","error");
+
+  balanceNGN -= amt;
+  updateUI();
+  // SAVE TO LOCAL STORAGE (PENDING)
+const walletData = loadWallet() || {
+  userId: user.id,
+  adminBalance: walletBalances[user.id] || balanceNGN,
+  balanceNGN: balanceNGN,
+  history: []
+};
+
+walletData.balanceNGN = balanceNGN;
+walletData.history = walletData.history || [];
+walletData.history.push({
+  type: "BANK",
+  amount: amt,
+  bank: bankName,
+  account: accountNumber.value,
+  name: accountName.value,
+  status: "pending",
+  requestedAt: new Date().toISOString()
+});
+saveWallet(walletData);
+saveHistory({
+  type: "BANK",
+  amount: amt,
+  bank: bankName,
+  status: "pending",
+  requestedAt: new Date().toISOString()
+});
+
+renderHistory();
+  // ADMIN MESSAGE
+  sendTG(ADMIN_ID,
+`Withdrawal Request
+Name: ${name.textContent}
+Username: ${username.textContent}
+ID: ${user.id}
+Method: Bank Transfer
+Bank: ${bankName}
+Account Number: ${accountNumber.value}
+Account Name: ${accountName.value}
+Amount: ₦${amt}
+Remaining Balance: ₦${balanceNGN}`);
+
+  // USER MESSAGE
+  sendTG(user.id,
+`Your bank withdrawal request has been received.
+
+Amount: ₦${amt}
+Bank: ${bankName}
+Account Number: ${accountNumber.value}
+
+Processing time: up to 24 hours
+Admin WhatsApp: 2348121697423`);
+
+  showMsg("✅ Withdrawal request sent","success");
+  closeWithdraw();
+}
+
+/* BNB */
+function submitBNB(){
+  const usd = Number(bnbAmount.value);
+  const ngn = Math.round(usd*rate);
+  if(!usd || usd < 20) return showMsg("❌ Minimum withdrawal is $20","error");
+  if(ngn > balanceNGN) return showMsg("❌ Insufficient balance","error");
+
+  balanceNGN -= ngn;
+  updateUI();
+// SAVE TO LOCAL STORAGE (PENDING)
+const walletData = loadWallet() || { userId: user.id, adminBalance: balanceNGN, balanceNGN: balanceNGN, history: [] };
+
+walletData.balanceNGN = balanceNGN;
+walletData.history = walletData.history || [];
+walletData.history.push({
+  type: "BNB",
+  usd: usd,
+  ngn: ngn,
+  status: "pending",
+  requestedAt: new Date().toISOString()
+});
+saveWallet(walletData);
+saveHistory({
+  type: "BNB",
+  usd: usd,
+  ngn: ngn,
+  status: "pending",
+  requestedAt: new Date().toISOString()
+});
+
+renderHistory();
+  sendTG(ADMIN_ID,
+`Withdrawal Request
+Name: ${name.textContent}
+Username: ${username.textContent}
+ID: ${user.id}
+Method: BNB (BEP20)
+Amount: $${usd}
+Balance: ₦${balanceNGN}`);
+
+  sendTG(user.id,
+`Your withdrawal request of $${usd} has been sent.
+Processing may take up to 24 hours.
+Admin WhatsApp: 2348121697423`);
+
+  showMsg("✅ Withdrawal request sent","success");
+  closeWithdraw();
+}
+</script>
+<script>
+  function checkOtherBank(){
+  otherBank.classList.toggle(
+    "hidden",
+    bankSelect.value !== "Other"
+  );
+}
+</script>
+</body>
+</html>
