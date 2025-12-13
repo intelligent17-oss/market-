@@ -20,7 +20,7 @@ const productsData = [
   image: "https://ibb.co/MkFN0Cdp",
   sellerId: 8097634090,
   sellerContact: "Whatsapp: +2349067581749",
-  url: "tiktok.com/@laze1977"
+  url: "https://tiktok.com/@laze1977"
 },
 {
   id: "P1765526509190",
