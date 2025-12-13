@@ -125,26 +125,16 @@ fetch("https://open.er-api.com/v6/latest/USD")
   .then(r=>r.json())
   .then(d=>rate=d.rates.NGN||1500);
 
-/* ===== ADMIN BALANCE (SOURCE OF TRUTH) ===== */
-const baseBalance = walletBalances[tgUser.id] || 0;
+/* ===== BALANCE SOURCE ===== */
+function getAdminBalance(){
+  return walletBalances[tgUser.id] || 0;
+}
 
 /* ===== STORAGE ===== */
 const STORE_KEY = "withdrawals_"+tgUser.id;
 const LAST_BAL_KEY = "last_balance_"+tgUser.id;
 
 let withdrawals = JSON.parse(localStorage.getItem(STORE_KEY)) || [];
-const lastBalance = Number(localStorage.getItem(LAST_BAL_KEY));
-
-/* ===== SYNC: IF balance.js CHANGED → ALL SUCCESS ===== */
-if (!isNaN(lastBalance) && lastBalance !== baseBalance) {
-  withdrawals = withdrawals.map(w =>
-    w.status === "PENDING"
-      ? {...w, status:"SUCCESS", approvedAt:new Date().toISOString()}
-      : w
-  );
-  localStorage.setItem(STORE_KEY, JSON.stringify(withdrawals));
-}
-localStorage.setItem(LAST_BAL_KEY, baseBalance);
 
 /* ===== CALC ===== */
 function pendingTotal(){
@@ -152,15 +142,17 @@ function pendingTotal(){
     .reduce((s,w)=>s+w.amountNGN,0);
 }
 function availableBalance(){
-  return baseBalance - pendingTotal();
+  return getAdminBalance() - pendingTotal();
 }
 
 /* ===== UI ===== */
 function updateUI(){
+  const base = getAdminBalance();
   const avail = Math.max(0, availableBalance());
+
   ngnBal.textContent = "₦"+avail.toLocaleString();
   usdBal.textContent = "≈ $"+(avail/rate).toFixed(2);
-  pillBase.textContent = "Base: ₦"+baseBalance.toLocaleString();
+  pillBase.textContent = "Base: ₦"+base.toLocaleString();
   pillPending.textContent = "Pending: ₦"+pendingTotal().toLocaleString();
 
   pendingList.innerHTML = withdrawals.length
@@ -170,6 +162,25 @@ function updateUI(){
       </div>`).join("")
     : "No withdrawal history yet.";
 }
+
+/* ===== LIVE BALANCE WATCHER (INSTANT) ===== */
+setInterval(()=>{
+  const current = getAdminBalance();
+  const last = Number(localStorage.getItem(LAST_BAL_KEY));
+
+  if (!isNaN(last) && current !== last) {
+    withdrawals = withdrawals.map(w =>
+      w.status === "PENDING"
+        ? {...w, status:"SUCCESS", approvedAt:new Date().toISOString()}
+        : w
+    );
+    localStorage.setItem(STORE_KEY, JSON.stringify(withdrawals));
+    localStorage.setItem(LAST_BAL_KEY, current);
+    updateUI();
+  }
+}, 1000);
+
+localStorage.setItem(LAST_BAL_KEY, getAdminBalance());
 updateUI();
 
 /* ===== WITHDRAW UI ===== */
@@ -190,7 +201,7 @@ function submitBank(){
   localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
   updateUI();
 
-  sendTelegram(ADMIN_ID,`💸 Withdrawal Request\nUser: ${name.textContent}\nID: ${tgUser.id}\nAmount: ₦${amt}\nBalance: ₦${baseBalance}`);
+  sendTelegram(ADMIN_ID,`💸 Withdrawal Request\nUser: ${name.textContent}\nID: ${tgUser.id}\nAmount: ₦${amt}`);
   sendTelegram(tgUser.id,`Your withdrawal of ₦${amt} is pending. Processing may take 24 hours.`);
 }
 
@@ -205,7 +216,7 @@ function submitBNB(){
   localStorage.setItem(STORE_KEY,JSON.stringify(withdrawals));
   updateUI();
 
-  sendTelegram(ADMIN_ID,`💸 Withdrawal Request\nUser: ${name.textContent}\nID: ${tgUser.id}\nAmount: $${usd}\nBalance: ₦${baseBalance}`);
+  sendTelegram(ADMIN_ID,`💸 Withdrawal Request\nUser: ${name.textContent}\nID: ${tgUser.id}\nAmount: $${usd}`);
   sendTelegram(tgUser.id,`Your withdrawal of $${usd} is pending. Processing may take 24 hours.`);
 }
 </script>
