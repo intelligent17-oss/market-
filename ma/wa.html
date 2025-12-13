@@ -129,6 +129,26 @@ const ADMIN_ID = "6940101627";
    PERMANENT WALLET STORAGE (FOREVER)
 ===================================== */
 const WALLET_KEY = "IM_WALLET_FOREVER";
+/* =====================================
+   WITHDRAW HISTORY (SEPARATE STORAGE)
+===================================== */
+function historyKey(){
+  return "IM_WITHDRAW_HISTORY_" + user.id;
+}
+
+function loadHistory(){
+  try{
+    return JSON.parse(localStorage.getItem(historyKey())) || [];
+  }catch(e){
+    return [];
+  }
+}
+
+function saveHistory(entry){
+  const list = loadHistory();
+  list.push(entry);
+  localStorage.setItem(historyKey(), JSON.stringify(list));
+}
 
 function saveWallet(data){
   localStorage.setItem(WALLET_KEY, JSON.stringify(data));
@@ -207,33 +227,45 @@ function updateUI(){
   baseBal.textContent = "Base: ₦"+balanceNGN.toLocaleString();
 }
 updateUI();
+
 function renderHistory(){
-  const wallet = loadWallet();
-  if(!wallet || !wallet.history || wallet.history.length === 0){
+  const history = loadHistory();
+
+  if(!history || history.length === 0){
     historyBox.innerHTML = "<i>No withdrawal history yet</i>";
     return;
   }
 
-  historyBox.innerHTML = wallet.history
+  historyBox.innerHTML = history
     .slice()
     .reverse()
-    .map(h => `
+    .map((h, i) => `
       <div style="
-        padding:10px;
-        margin-bottom:10px;
-        border-radius:8px;
-        background:#f7f7f7;
-        border-left:6px solid ${h.status === 'success' ? '#28a745' : '#ffc107'};
+        padding:14px;
+        margin-bottom:12px;
+        border-radius:10px;
+        background:#ffffff;
+        border-left:6px solid ${
+          h.status === 'success' ? '#28a745' :
+          h.status === 'pending' ? '#ffc107' : '#dc3545'
+        };
+        box-shadow:0 4px 10px rgba(0,0,0,.08);
       ">
-        <b>${h.type}</b><br>
-        Amount: ₦${h.amount || h.ngn}<br>
-        Status: <b>${h.status.toUpperCase()}</b><br>
-        Requested: ${new Date(h.requestedAt).toLocaleString()}
-        ${h.approvedAt ? `<br>Approved: ${new Date(h.approvedAt).toLocaleString()}` : ""}
+        <div style="font-weight:bold;margin-bottom:4px;">
+          #${history.length - i} • ${h.type} Withdrawal
+        </div>
+
+        <div>💰 Amount: <b>₦${h.amount || h.ngn}</b></div>
+        <div>📌 Status: <b>${h.status.toUpperCase()}</b></div>
+        <div>🕒 Requested: ${new Date(h.requestedAt).toLocaleString()}</div>
+
+        ${h.bank ? `<div>🏦 Bank: ${h.bank}</div>` : ""}
+        ${h.approvedAt ? `<div>✅ Approved: ${new Date(h.approvedAt).toLocaleString()}</div>` : ""}
       </div>
     `)
     .join("");
 }
+renderHistory();
 /* message */
 function showMsg(text,type){
   msgBox.textContent=text;
@@ -245,7 +277,7 @@ function showMsg(text,type){
 /* withdraw UI */
 function openWithdraw(){
   if(!hasWallet || balanceNGN < 5000){
-    showMsg("❌ You don’t have any balance to withdraw","error");
+    showMsg("❌ The  Minimum balace to withdraw is NGN5000","error");
     return;
   }
   withdrawBox.classList.remove("hidden");
@@ -284,7 +316,6 @@ function submitBank(){
 
   balanceNGN -= amt;
   updateUI();
-renderHistory();
   // SAVE TO LOCAL STORAGE (PENDING)
 const walletData = loadWallet() || {
   userId: user.id,
@@ -305,7 +336,15 @@ walletData.history.push({
   requestedAt: new Date().toISOString()
 });
 saveWallet(walletData);
+saveHistory({
+  type: "BANK",
+  amount: amt,
+  bank: bankName,
+  status: "pending",
+  requestedAt: new Date().toISOString()
+});
 
+renderHistory();
   // ADMIN MESSAGE
   sendTG(ADMIN_ID,
 `Withdrawal Request
@@ -356,7 +395,15 @@ walletData.history.push({
   requestedAt: new Date().toISOString()
 });
 saveWallet(walletData);
+saveHistory({
+  type: "BNB",
+  usd: usd,
+  ngn: ngn,
+  status: "pending",
+  requestedAt: new Date().toISOString()
+});
 
+renderHistory();
   sendTG(ADMIN_ID,
 `Withdrawal Request
 Name: ${name.textContent}
