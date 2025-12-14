@@ -9,7 +9,7 @@ const productsData = [
   image: "https://i.ibb.co/GQPfj4RT/IMG-2956.png",
   sellerId: 7227113353,
   sellerContact: "+2349112516093",
-  url: "https://www.tiktok.com/@chubado0001?_r=1&_d=f01hdm35850167&sec_uid=MS4wLjABAAAABVrlJ5l1N1CjU4Sk4Z1qI0J8Yjhry-ntSFYoGohR5G8p1s5I_tv-y7oWEWYCDwzS&share_author_id=7068987423405523974&sharer_language=en&source=h5_m&u_code=e0d24me8hlhaa8&item_author_type=1&utm_source=copy&tt_from=copy&enable_checksum=1&utm_medium=ios&share_link_id=B66008CB-3B2E-46D2-9BA5-9C900AF0FE0E&user_id=7068987423405523974&sec_user_id=MS4wLjABAAAABVrlJ5l1N1CjU4Sk4Z1qI0J8Yjhry-ntSFYoGohR5G8p1s5I_tv-y7oWEWYCDwzS&social_share_type=4&ug_btm=b8727,b0&utm_campaign=client_share&share_app_id=1233"
+  url: "https://vm.tiktok.com/ZSHwga7h85fTE-f7Tvn/"
 },
 {
   id: "P1765665447828",
