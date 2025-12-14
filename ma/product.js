@@ -6,7 +6,7 @@ const productsData = [
   description: "Don’t change details in haste so that you log will last long and useful to you.",
   price: "2500",
   currency: "NGN",
-  image: "https://ibb.co/Hfnc1f84 https://ibb.co/zh29jwsb",
+  image: "https://i.ibb.co/1fXyhxZK/IMG-2950.png",
   sellerId: 7227113353,
   sellerContact: "+2347075433008",
   url: "https://www.facebook.com/share/1C7qu1MnFD/?mibextid=wwXIfr"
