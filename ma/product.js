@@ -1,6 +1,17 @@
 // PRODUCTS DATA
 const productsData = [
 {
+  id: "P1765670040110",
+  name: "2021 South Africa switch profile (can create page )",
+  description: "Don’t change details in haste so that you log will last long and useful to you.",
+  price: "2500",
+  currency: "NGN",
+  image: "https://ibb.co/Hfnc1f84 https://ibb.co/zh29jwsb",
+  sellerId: 7227113353,
+  sellerContact: "+2347075433008",
+  url: "https://www.facebook.com/share/1C7qu1MnFD/?mibextid=wwXIfr"
+},
+{
   id: "P1765665447828",
   name: "Facebook account",
   description: "Afghanistan",
@@ -10,7 +21,7 @@ const productsData = [
   sellerId: 7639132061,
   sellerContact: "+2348129086235",
   url: "https://www.facebook.com/profile.php?id=61582133835196"
-}
+},
 {
   id: "P1765562740044",
   name: "Plenty TikTok account",
