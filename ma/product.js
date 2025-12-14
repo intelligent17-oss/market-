@@ -1,6 +1,17 @@
 // PRODUCTS DATA
 const productsData = [
 {
+  id: "P1765665447828",
+  name: "Facebook account",
+  description: "Afghanistan",
+  price: "5000",
+  currency: "NGN",
+  image: "https://i.ibb.co/Gfck1BWm/Screenshot-20251213-232350.jpg",
+  sellerId: 7639132061,
+  sellerContact: "+2348129086235",
+  url: "https://www.facebook.com/profile.php?id=61582133835196"
+}
+{
   id: "P1765562740044",
   name: "Plenty TikTok account",
   description: "Plenty TikTok account",
