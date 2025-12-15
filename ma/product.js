@@ -1,6 +1,17 @@
 // PRODUCTS DATA
 const productsData = [
 {
+  id: "P1765777198278",
+  name: "Facebook with switch 3k Followers",
+  description: "Facebook with switch profile page",
+  price: "5000",
+  currency: "NGN",
+  image: "https://ibb.co/Nn21ZkkW",
+  sellerId: 8398812994,
+  sellerContact: "+2348123246776",
+  url: "https://www.facebook.com/share/1J39xnZBwL/?mibextid=wwXIfr"
+},
+{
   id: "P1765759893615",
   name: "Crypto full  format for investment and tricking",
   description: "Crypto full format the both investment and tricking",
