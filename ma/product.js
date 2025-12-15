@@ -1,6 +1,17 @@
 // PRODUCTS DATA
 const productsData = [
 {
+  id: "P1765780966773",
+  name: "Asa Facebook with switch profile",
+  description: "6years Facebook",
+  price: "5000",
+  currency: "NGN",
+  image: "https://i.ibb.co/ZRJ4Y17s/82-FA62-A7-8574-4-E30-9369-EA3273-F1-F493.png",
+  sellerId: 8398812994,
+  sellerContact: "08123246776",
+  url: "https://www.facebook.com/share/1C14vZKJ8R/?mibextid=wwXIfr"
+},
+{
   id: "P1765777198278",
   name: "Facebook with switch 3k Followers",
   description: "Facebook with switch profile page",
