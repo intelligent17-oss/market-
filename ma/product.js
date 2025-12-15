@@ -10,7 +10,7 @@ const productsData = [
   sellerId: 8053188303,
   sellerContact: "Whatsapp +2347066558601",
   url: "https://www.tiktok.com/@user6061981226122?_r=1&_t=ZN-92F3ou1XHFe"
-}
+},
 {
   id: "P1765780966773",
   name: "Asa Facebook with switch profile",
