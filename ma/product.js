@@ -6,7 +6,7 @@ const productsData = [
   description: "Facebook with switch profile page",
   price: "5000",
   currency: "NGN",
-  image: "https://ibb.co/Nn21ZkkW",
+  image: "https://i.ibb.co/1JGs8ppR/EF90224-A-6-EB4-415-E-AAFC-5527-B61-A6-DFC.png",
   sellerId: 8398812994,
   sellerContact: "+2348123246776",
   url: "https://www.facebook.com/share/1J39xnZBwL/?mibextid=wwXIfr"
