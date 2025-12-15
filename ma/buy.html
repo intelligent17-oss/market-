@@ -478,6 +478,9 @@ body.dark #closeAds {
   font-weight:bold;
   text-shadow:0 0 6px rgba(0,0,0,0.8);
 }
+.am {
+  font-size:25px;
+}
 </style>
 </head>
 
@@ -844,7 +847,7 @@ if (method === "NGN") {
     let totalNGN = totalUSD * liveRate;
 
     document.getElementById("convertedPrice").innerHTML =
-        `<b>Total Amount:</b> ₦${Math.round(totalNGN).toLocaleString()} <br>
+        `<b class="am">Total Amount:</b> ₦${Math.round(totalNGN).toLocaleString()} <br>
          <small style='color:#777'>Product Price: ${basePrice} ${currentProduct.currency}</small><br>
          <small style='color:#777'>+$1 fee included (converted)</small><br>
          <small style='color:#777'>Live rate: ₦${Math.round(liveRate)}/$</small>`;
@@ -858,7 +861,7 @@ if (method === "NGN") {
 // ===============================================
 else {
     document.getElementById("convertedPrice").innerHTML =
-        `<b>Total Amount:</b> $${totalUSD.toFixed(2)} <br>
+        `<b class="am">Total Amount:</b> $${totalUSD.toFixed(2)} <br>
          <small style='color:#777'>Product Price: ${basePrice} ${currentProduct.currency}</small><br>
          <small style='color:#777'>+$1 fee included</small><br>
          <small style='color:#777'>Live rate: ₦${Math.round(liveRate)}/$</small>`;
