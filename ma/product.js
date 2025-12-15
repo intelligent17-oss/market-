@@ -1,6 +1,17 @@
 // PRODUCTS DATA
 const productsData = [
 {
+  id: "P1765759893615",
+  name: "Crypto full  format for investment and tricking",
+  description: "Crypto full format the both investment and tricking",
+  price: "10000",
+  currency: "NGN",
+  image: "https://i.ibb.co/rbZnp2s/IMG-20240916-WA0013-1.jpg",
+  sellerId: 6976365864,
+  sellerContact: "WhatsApp +2348121697423",
+  url: "https://i.ibb.co/rbZnp2s/IMG-20240916-WA0013-1.jpg"
+}
+{
   id: "P1765725968925",
   name: "2024 300 plus Followers TikTok with real likes and followers , activities . It’s can actively send messages and follow",
   description: "You may change details after login",
