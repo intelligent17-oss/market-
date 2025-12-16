@@ -34,17 +34,6 @@ const productsData = [
   url: "https://www.facebook.com/share/1C14vZKJ8R/?mibextid=wwXIfr"
 },
 {
-  id: "P1765777198278",
-  name: "Facebook with switch 3k Followers",
-  description: "Facebook with switch profile page",
-  price: "6000",
-  currency: "NGN",
-  image: "https://i.ibb.co/1JGs8ppR/EF90224-A-6-EB4-415-E-AAFC-5527-B61-A6-DFC.png",
-  sellerId: 8398812994,
-  sellerContact: "+2348123246776",
-  url: "https://www.facebook.com/share/1J39xnZBwL/?mibextid=wwXIfr"
-},
-{
   id: "P1765759893615",
   name: "Crypto full  format for investment and tricking",
   description: "Crypto full format the both investment and tricking",
