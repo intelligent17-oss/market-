@@ -4,7 +4,7 @@ const productsData = [
   id: "P1765836021656",
   name: "ALL work full billing format",
   description: "All billing format",
-  price: "10000",
+  price: "11000",
   currency: "NGN",
   image: "https://www.snapchat.com/add/s_money20228509?share_id=h6K0pbwxGK0&locale=en-US",
   sellerId: 5964642285,
