@@ -1,6 +1,18 @@
 // PRODUCTS DATA
 const productsData = [
 {
+  id: "P1765910987929",
+  name: "intelligent premium, OTP BYPASS BOT ✔️✅",
+  description: "Admin post✅
+Buy intelligent Verification link premium and you will be able to hack any social media account and collect otp code at the same time, you can also hack bank and CC",
+  price: "20000",
+  currency: "NGN",
+  image: "https://i.ibb.co/FbR3cRLX/IMG-20251216-WA0026.jpg",
+  sellerId: 8140042906,
+  sellerContact: "Whatsapp +2348121697423",
+  url: "http://t.me/inamyophisintlinkbot/premium"
+},
+{
   id: "P1765777198278",
   name: "Facebook with switch 3k Followers",
   description: "Facebook with switch profile page",
