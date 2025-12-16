@@ -187,7 +187,6 @@ const productsData = [
   sellerContact: "Whatsapp: +234 916 631 4650",
   url: "https://i.ibb.co/Q73C02fQ/Screenshot-20251128-040729.png"
 },
-  { id:"P001", name:"Facebook Account", description:"Very good and strong.", price:"4500", currency:"NGN", image:"https://i.ibb.co/1f9GfgZL/IMG-20251124-000420-272.jpg", sellerId: 8111362786, sellerContact: "Whatsapp: +234 916 631 4650", url:"https://www.facebook.com/profile.php?id=61582415454848" },
-  { id:"P002", name:"Tiktok account", description:"Active Tiktok account with 12+ followers.", price:"6", currency:"USD", image:"https://i.ibb.co/ksGYg1Vx/Screenshot-20251124-000807.png", sellerId: 7979664801, sellerContact: "Whatsapp: +2348121697423", url:"https://vm.tiktok.com/ZSHTeW8bRNKww-8KMhW/" } ,
-  { id: "P176399729659985", name: "Foreign TikTok", description: "34 followers, 11 likes. Active.", price: "7000", currency: "NGN", image: "https://www.tiktok.com/@smith30114?_r=1&_t=ZS-91fY6ubi0yT", sellerId: 8111362786, sellerContact: "Whatsapp: +2349166314650", url: "https://www.tiktok.com/@smith30114?_r=1&_t=ZS-91fY6ubi0yT" }
+{ id:"P001", name:"Facebook Account", description:"Very good and strong.", price:"4500", currency:"NGN", image:"https://i.ibb.co/1f9GfgZL/IMG-20251124-000420-272.jpg", sellerId: 8111362786, sellerContact: "Whatsapp: +234 916 631 4650", url:"https://www.facebook.com/profile.php?id=61582415454848" },
+{ id: "P176399729659985", name: "Foreign TikTok", description: "34 followers, 11 likes. Active.", price: "7000", currency: "NGN", image: "https://www.tiktok.com/@smith30114?_r=1&_t=ZS-91fY6ubi0yT", sellerId: 8111362786, sellerContact: "Whatsapp: +2349166314650", url: "https://www.tiktok.com/@smith30114?_r=1&_t=ZS-91fY6ubi0yT" }
 ];
