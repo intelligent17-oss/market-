@@ -1042,7 +1042,24 @@ function showAd() { if(typeof show_9830606==="function"){ show_9830606(); } else
 window.addEventListener("load", () => {
     setTimeout(() => { showAd(); setInterval(showAd, 40000); }, 10000);
 });
+function getProductLink(productId) {
+  return `https://t.me/intelligentmarketbot/marketplace?startapp=product_${productId}`;
+}
 
+function copyProductLink(productId) {
+  const link = getProductLink(productId);
+  navigator.clipboard.writeText(link).then(() => {
+    showMessage("Product link copied ✅", "success");
+  });
+}
+
+function shareProductLink(productName, productId) {
+  const link = getProductLink(productId);
+  const text = `🔥 ${productName} | Buy here 👇`;
+  const tgShare =
+    `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
+  window.open(tgShare, "_blank");
+}
 // MY PRODUCT FEATURE
 const myProductBtn = document.getElementById('myProductBtn');
 const userProducts = productsData.filter(p => p.sellerId === tgUser.id);
@@ -1056,18 +1073,29 @@ myProductBtn.onclick = () => {
     return;
   }
   userProducts.forEach((prod) => {
-    const div = document.createElement('div');
-    div.className = "product";
-    div.innerHTML = `
-      <img src="${prod.image}">
-      <div class="product-details">
-        <p><b>${prod.name}</b></p>
-        <p>URL: <a href="${prod.url}" target="_blank">${prod.url}</a></p>
-        <p>Price: ${prod.price} ${prod.currency}</p>
-        <p>${prod.description}</p>
-        <button class="deleteBtn">Request Delete</button>
-      </div>
-    `;
+  const div = document.createElement('div');
+  div.className = "product";
+  div.innerHTML = `
+    <img src="${prod.image}">
+    <div class="product-details">
+      <p><b>${prod.name}</b></p>
+      <p>URL: <a href="${prod.url}" target="_blank">${prod.url}</a></p>
+      <p>Price: ${prod.price} ${prod.currency}</p>
+      <p>${prod.description}</p>
+
+      <button onclick="copyProductLink('${prod.id}')" class="buyBtn">
+        📋 Copy Product Link
+      </button>
+
+      <button onclick="shareProductLink('${prod.name}','${prod.id}')" class="buyBtn">
+        📤 Share Product
+      </button>
+
+      <button class="deleteBtn nnbb2">
+        ❌ Request Delete
+      </button>
+    </div>
+  `;
     container.appendChild(div);
 
     div.querySelector('.deleteBtn').onclick = () => {
