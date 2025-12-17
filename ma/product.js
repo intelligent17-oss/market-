@@ -1,6 +1,17 @@
 // PRODUCTS DATA
 const productsData = [
 {
+  id: "P1765970819643",
+  name: "Foreign Tiktok Account | 28k Followers",
+  description: "4 years Foreign Tiktok Account super cheap super affordable",
+  price: "46000",
+  currency: "NGN",
+  image: "https://i.ibb.co/1Y44k3qN/IMG-20251217-WA0017.jpg",
+  sellerId: 6734264101,
+  sellerContact: "+2359155416011",
+  url: "https://www.tiktok.com/@mkawais76?_r=1&_t=ZS-92IOuvd4pjp"
+},
+{
   id: "P1765910987929",
   name: "intelligent premium, OTP BYPASS BOT ✔️✅",
   description: "Admin post✅ Buy intelligent Verification link premium and you will be able to hack any social media account and collect otp code at the same time, you can also hack bank and CC",
