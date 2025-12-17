@@ -1170,5 +1170,48 @@ document.getElementById("closeAds").onclick = () => {
   document.getElementById("adsBanner").style.display = "none";
 };
 </script>
+<script>
+/* =====================================
+   TELEGRAM startapp PRODUCT HANDLER
+===================================== */
+(function () {
+  const tg = Telegram.WebApp;
+  const startParam = tg.initDataUnsafe?.start_param;
+
+  if (!startParam) return;
+
+  // Expecting format: product_P1764508470835
+  if (!startParam.startsWith("product_")) return;
+
+  const productId = startParam.replace("product_", "");
+
+  // Find product
+  const index = productsData.findIndex(p => p.id === productId);
+  if (index === -1) {
+    showMessage("Product not found ❌", "error");
+    return;
+  }
+
+  // Scroll + highlight product
+  setTimeout(() => {
+    const productEls = document.querySelectorAll(".product");
+    const target = productEls[index];
+    if (!target) return;
+
+    // Focus animation
+    productEls.forEach(p => p.classList.remove("focused"));
+    target.classList.add("focused");
+
+    target.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+    // Auto-select product for buying
+    currentProduct = productsData[index];
+    showMessage("Product loaded ✅ Scroll down to buy", "success");
+  }, 500);
+})();
+</script>
 </body>
 </html> 
